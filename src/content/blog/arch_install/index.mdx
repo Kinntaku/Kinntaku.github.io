@@ -72,6 +72,8 @@ image: './banner.png'
    - [Nerd Fonts](https://www.nerdfonts.com/font-downloads)
 
       这里选择 `0xProto Nerd Font`
+
+   - [Jetbrains Mono](https://www.jetbrains.com/lp/mono/)
    
    - Windows 字体
 
@@ -826,7 +828,7 @@ tips_key: "Control+q" # 设置快速输入提示键为 Ctrl + Q
 
 右键任务栏 Fcitx 图标 - 选择中州韵 - 右键地球图标项 - 选择重新部署
 
-### micromamba
+### (可选) micromamba
 
 编辑
 
@@ -865,7 +867,7 @@ Plasma设置 - 电源管理 - 空闲时：无操作，按下电源键时：显�
 
 Plasma设置 - 锁屏 - 自动锁定屏幕：不自动锁屏
 
-### starship 终端美化
+### (可选) starship 终端美化
 
 编辑
 
@@ -966,7 +968,7 @@ style = "bg:#1d2230"
 format = '[[  $time ](fg:#a0a9cb bg:#1d2230)]($style)'
 ```
 
-###  minegrub
+###  (可选) minegrub
 
 编辑 `./minegrub-world-selection/theme.txt`
 所有 top 属性都加上 45
@@ -1000,8 +1002,15 @@ sudo grub-mkconfig -o /boot/grub/grub.cfg
 
 ### vscode
 
-安装插件 `background`, `Chinese (Simplified) (简体中文) Language Pack for Visual Studio Code`, `Path Intellisense`, `Panda Theme`
+安装插件 
 
+- background
+
+- Chinese (Simplified) (简体中文) Language Pack for Visual Studio Code
+
+- Path Intellisense
+
+- Panda Theme
 
 ```json
 "files.autoSave": "afterDelay",
@@ -1040,7 +1049,7 @@ sudo grub-mkconfig -o /boot/grub/grub.cfg
 "editor.fontFamily": "JetBrains Mono, 'Droid Sans Mono', 'monospace', monospace, 'MesloLGS NF'",
 ```
 
-### podman 和 distrobox 设置
+### (可选) podman 和 distrobox 设置
 
 编辑
 
@@ -1080,7 +1089,9 @@ systemctl --user enable --now podman.socket
    ```
 配置 VSCode 进行开发
 
-vscode 安装插件 `Remote Development`
+vscode 安装插件 
+
+- Remote Development
 
 修改 vscode 设置
 
@@ -1088,7 +1099,7 @@ vscode 安装插件 `Remote Development`
 "dev.containers.dockerPath": "podman",
 ```
 
-### mujoco 设置
+### (可选) mujoco 设置
 
 编辑
 
@@ -1103,7 +1114,7 @@ export PATH="/home/kinntaku/Applications/mujoco-3.3.7/bin:$PATH"
 ```
 
 
-### chromium
+### (可选) chromium
 
 如果出现 twitter 无法登录可以尝试添加以下启动参数
 
@@ -1113,24 +1124,26 @@ export PATH="/home/kinntaku/Applications/mujoco-3.3.7/bin:$PATH"
 
 安装扩展
 
-|名称|地址|
-|---|---|
-|小舒同学|https://chromewebstore.google.com/detail/%E5%B0%8F%E8%88%92%E5%90%8C%E5%AD%A6-%E5%9F%BA%E4%BA%8E%E4%B9%A6%E7%AD%BE%E7%9A%84%E6%96%B0%E6%A0%87%E7%AD%BE%E9%A1%B5/eldcinofoklpfhaanlhmkmadehfgcnon|
-|Bitwarden|https://chromewebstore.google.com/detail/bitwarden-%E5%AF%86%E7%A0%81%E7%AE%A1%E7%90%86%E5%99%A8/nngceckbapebfimnlniiiahkandclblb|
-|Allow Copy +|https://chromewebstore.google.com/detail/allow-copy-+/ajhbdcgfhlhhmocddefknjjkejcfpbnj|
-|Tampermonkey|https://chromewebstore.google.com/detail/%E7%AF%A1%E6%94%B9%E7%8C%B4/dhdgffkkebhmkfjojejmpbldmpobfkfo|
-|FireShot|https://chromewebstore.google.com/detail/take-webpage-screenshots/mcbpblocgmgfnpjjppndjkmgjaogfceg|
-|Imagus Reborn|https://chromewebstore.google.com/detail/imagus-reborn/fcjmgeodgobggcppooncdagfkogfffdm|
+- [小舒同学](https://chromewebstore.google.com/detail/%E5%B0%8F%E8%88%92%E5%90%8C%E5%AD%A6-%E5%9F%BA%E4%BA%8E%E4%B9%A6%E7%AD%BE%E7%9A%84%E6%96%B0%E6%A0%87%E7%AD%BE%E9%A1%B5/eldcinofoklpfhaanlhmkmadehfgcnon)
+
+- [Bitwarden](https://chromewebstore.google.com/detail/bitwarden-%E5%AF%86%E7%A0%81%E7%AE%A1%E7%90%86%E5%99%A8/nngceckbapebfimnlniiiahkandclblb)
+
+- [Allow Copy +](https://chromewebstore.google.com/detail/allow-copy-+/ajhbdcgfhlhhmocddefknjjkejcfpbnj)
+
+- [Tampermonkey](https://chromewebstore.google.com/detail/%E7%AF%A1%E6%94%B9%E7%8C%B4/dhdgffkkebhmkfjojejmpbldmpobfkfo)
+
+- [FireShot](https://chromewebstore.google.com/detail/take-webpage-screenshots/mcbpblocgmgfnpjjppndjkmgjaogfceg)
+
+- [Imagus Reborn](https://chromewebstore.google.com/detail/imagus-reborn/fcjmgeodgobggcppooncdagfkogfffdm)
 
 安装油猴脚本
 
-|名称|地址|
-|---|---|
-|CSDN Focus|https://greasyfork.org/zh-CN/scripts/420352-csdn-focus|
-|Bilibili 视频下载|https://greasyfork.org/zh-CN/scripts/413228-bilibili%E8%A7%86%E9%A2%91%E4%B8%8B%E8%BD%BD|
+- [CSDN Focus](https://greasyfork.org/zh-CN/scripts/420352-csdn-focus)
+
+- [Bilibili 视频下载](https://greasyfork.org/zh-CN/scripts/413228-bilibili%E8%A7%86%E9%A2%91%E4%B8%8B%E8%BD%BD)
 
 
-### latex
+### (可选) latex
 
 拉取镜像
 
@@ -1163,7 +1176,11 @@ tlmgr install fandol
 
 vscode 连接容器
 
-vscode server 安装插件 `LaTeX`, `LaTeX Workshop`
+vscode server 安装插件
+
+- LaTeX
+
+- LaTeX Workshop`
 
 修改 vscode 设置
 
@@ -1225,7 +1242,7 @@ vscode server 安装插件 `LaTeX`, `LaTeX Workshop`
 ```
 
 
-### labelme
+### (可选) labelme
 
 ```bash
 conda create -n labelme python=3.13
@@ -1241,7 +1258,7 @@ export QT_QPA_PLATFORM=xcb
 micromamba run -n labelme labelme
 ```
 
-### pdfmathtranslate-next
+### (可选) pdfmathtranslate-next
 
 使用 docker
 
@@ -1251,7 +1268,7 @@ podman run --rm -p 7860:7860 docker.io/awwaawwa/pdfmathtranslate-next
 http://127.0.0.1:7860
 ```
 
-### Minecraft
+### (可选) Minecraft
 
 创建 hmcl 的快捷方式
 
@@ -1262,13 +1279,13 @@ export __GLX_VENDOR_LIBRARY_NAME=nvidia
 java -Dglass.gtk.uiScale=1.5 -jar ~/Applications/Minecraft/HMCL-3.8.0.304.jar
 ```
 
-### Kirta
+### (可选) Kirta
 
 Kirta - 笔刷 - 笔刷编辑器 - 大小 - 覆盖旧笔刷 - 保存
 
 Kirta - 设置 - 配置Kirta - 笔刷光标图标 - 箭头 - 笔刷轮廓形状 - 圆形轮廓
 
-### Github  
+### (可选) Github  
 
 ```bash
 git config --global user.name "你的名字"
