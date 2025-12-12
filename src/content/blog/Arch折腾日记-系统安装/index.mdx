@@ -21,15 +21,17 @@ image: './banner.png'
 
 # 系统安装 (Live CD)
 
-## 禁用 reflector 服务
+## chroot 前
 
-此步骤可选, 不禁用也没关系, 后面也会手动换换源
+### 禁用 reflector 服务
+
+不禁用也没关系, 后面也会手动换换源
 
 ```bash
 systemctl stop reflector.service
 systemctl status reflector.service
 ```
-## (可选) wifi连接
+### (可选) wifi连接
 
 ```bash
 iwctl # 进入交互界面
@@ -41,14 +43,14 @@ station wlan0 connect wifi-name
 exit
 ```
 
-## 更新时钟
+### 更新时钟
 
 ```
 timedatectl set-ntp true
 timedatectl status
 ```
 
-## 使用 ssh 安装
+### (可选) 使用 ssh 安装
 
 ```bash
 passwd # 设置 root 密码
@@ -58,25 +60,38 @@ ip a # 查看 IP 地址
 ssh -o StrictHostKeyChecking=no -o "UserKnownHostsFile /dev/null" root@目标计算机的_IP_地址
 ```
 
-## 修改 Arch 仓库镜像站
+### 修改镜像站和仓库
+
+#### 修改 Arch 仓库镜像站
+
+编辑
 
 ```bash
 nano /etc/pacman.d/mirrorlist
-# 在文件的最顶端添加 Server = https://mirrors.ustc.edu.cn/archlinux/$repo/os/$arch
 ```
 
-## (可选) 添加cachyos软件源
+在文件的最顶端添加 
+
+```
+Server = https://mirrors.ustc.edu.cn/archlinux/$repo/os/$arch
+```
+
+#### (可选) 添加cachyos软件源
 
 CachyOS 是一个基于 Arch Linux 的发行版, 专注于为用户提供更好的性能, 特别是针对AMD硬件进行了优化, 其软件源包含了很多特定优化的软件包.
 
 1. 导入 CachyOS 的 GPG 密钥并安装相关包
-
+   
+   导入密钥
+   
    ```bash
-   # 导入密钥
    sudo pacman-key --recv-keys F3B607488DB35A47 --keyserver keyserver.ubuntu.com
    sudo pacman-key --lsign-key F3B607488DB35A47
+   ```
 
-   # 安装 CachyOS 相关包
+   安装 CachyOS 相关包
+   
+   ```bash
    sudo pacman -U 'https://mirror.cachyos.org/repo/x86_64/cachyos/cachyos-keyring-20240331-1-any.pkg.tar.zst' \
    'https://mirror.cachyos.org/repo/x86_64/cachyos/cachyos-mirrorlist-22-1-any.pkg.tar.zst' \
    'https://mirror.cachyos.org/repo/x86_64/cachyos/cachyos-v3-mirrorlist-22-1-any.pkg.tar.zst' \
@@ -90,7 +105,14 @@ CachyOS 是一个基于 Arch Linux 的发行版, 专注于为用户提供更好�
 
    由于笔者使用 Ryzen 9 7940HX, 属于 Zen 4 架构, 因此选择 znver4 仓库
 
-   修改 `/etc/pacman.conf`, 添加以下内容到仓库中 `[core]` 项之前
+   修改 `/etc/pacman.conf`
+   
+   
+   ```bash
+   nano /etc/pacman.conf
+   ```
+   
+   添加以下内容到仓库中 `[core]` 项之前
 
    ```ini
    [cachyos-znver4]
@@ -106,15 +128,40 @@ CachyOS 是一个基于 Arch Linux 的发行版, 专注于为用户提供更好�
 
 3. 修改镜像站
 
+   编辑
+
    ```bash
    nano /etc/pacman.d/cachyos-mirrorlist
-   # 在最顶端添加 Server = https://mirrors.ustc.edu.cn/cachyos/repo/$arch/$repo
+   ```
+   
+   在最顶端添加 
+   
+   ```
+   Server = https://mirrors.ustc.edu.cn/cachyos/repo/$arch/$repo
+   ```
 
+   编辑
+
+   ```bash
    nano /etc/pacman.d/cachyos-v3-mirrorlist
-   # 在最顶端添加 Server = https://mirrors.ustc.edu.cn/cachyos/repo/$arch_v3/$repo
+   ```
 
+   在最顶端添加 
+   
+   ```bash
+   Server = https://mirrors.ustc.edu.cn/cachyos/repo/$arch_v3/$repo
+   ```
+
+   编辑
+
+   ```bash
    nano /etc/pacman.d/cachyos-v4-mirrorlist
-   # 在最顶端添加 Server = https://mirrors.ustc.edu.cn/cachyos/repo/$arch_v4/$repo
+   ```
+
+   在最顶端添加 
+   
+   ```bash
+   Server = https://mirrors.ustc.edu.cn/cachyos/repo/$arch_v4/$repo
    ```
 
 4. 更新仓库数据库
@@ -123,7 +170,7 @@ CachyOS 是一个基于 Arch Linux 的发行版, 专注于为用户提供更好�
    sudo pacman -Syy
    ```
 
-## 分区
+### 分区
 
 **注意: 建议提前备份重要数据, 以免误操作, 以下命令除非你非常清楚, 否则请勿直接复制粘贴执行!**
 
@@ -159,13 +206,19 @@ Linux 系统分区类型无需修改
 ```bash
 lsblk -f # 再次查看磁盘结构, 确认分区无误
 # 此处笔者查看分区 /dev/nvme1n1p2 为 EFI 分区, /dev/nvme1n1p3 为 Swap 分区, /dev/nvme1n1p4 为 Linux 系统分区 
+```
 
-# 格式化分区
+格式化分区
+
+```bash
 mkfs.fat -F32 /dev/nvme1n1p2
 mkswap /dev/nvme1n1p3
 mkfs.btrfs -L ArchLinux /dev/nvme1n1p4 # 输入自己喜欢的分区名字, 并格式化为 btrfs 文件系统
+```
 
-# 挂载 Btrfs 分区并创建子卷
+挂载 Btrfs 分区并创建子卷
+
+```bash
 mount -t btrfs -o compress=zstd /dev/nvme1n1p4 /mnt
 df -h
 btrfs subvolume create /mnt/@
@@ -174,8 +227,11 @@ btrfs subvolume create /mnt/@cache
 btrfs subvolume create /mnt/@log
 btrfs subvolume list -p /mnt # 检测子卷是否创建正确
 umount /mnt
+```
 
-# 正式挂载系统
+正式挂载系统
+
+```bash
 mount -t btrfs -o subvol=/@,compress=zstd /dev/nvme1n1p4 /mnt
 mount --mkdir -t btrfs -o subvol=/@home,compress=zstd /dev/nvme1n1p4 /mnt/home
 mount --mkdir -t btrfs -o subvol=/@cache,compress=zstd /dev/nvme1n1p4 /mnt/var/cache
@@ -183,10 +239,9 @@ mount --mkdir -t btrfs -o subvol=/@log,compress=zstd /dev/nvme1n1p4 /mnt/var/log
 mount --mkdir /dev/nvme1n1p2 /mnt/boot
 swapon /dev/nvme1n1p3
 df -h #查看挂载情况
-
 ```
 
-## 安装基础系统
+### 安装基础系统
 
 ```bash
 # 更新密钥环
@@ -209,37 +264,102 @@ pacstrap -K /mnt base base-devel linux-cachyos linux-cachyos-headers linux-firmw
 |efibootmgr grub efibootmgr os-prober|(可更换) 引导工具,本教程使用grub, 也可以使用 systemd-boot 或 limine||
 |openssh|(可选) sshd 客户端, 方便退出 Live CD 后远程安装系统||
 
+## chroot 后
+
+进入 chroot
+
+```
+arch-chroot /mnt 
+```
+
+### 分区表
+
 ```bash
 genfstab -U /mnt > /mnt/etc/fstab
 cat /mnt/etc/fstab # 确认分区表
 ```
+### 自定义设置
+
+#### 设置主机名
 
 ```bash
-arch-chroot /mnt 
 echo Arch-TUF > /etc/hostname # 设置你喜欢的主机名
+```
 
-# 设置时区
+#### 设置时区
+
+```bash
 ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime 
 hwclock --systohc
+```
 
-# 设置语言
+#### 设置语言
+
+编辑
+
+```bash
 vim /etc/locale.gen
-# 取消掉 
-# en_US.UTF-8 UTF-8 
-# zh_CN.UTF-8 UTF-8
-# 这两行的注释
+```
+
+取消注释
+
+```bash
+en_US.UTF-8 UTF-8 
+zh_CN.UTF-8 UTF-8
+```
+生成语言配置
+
+```bash
 locale-gen
+```
 
+设置语言
+
+```bash
 echo 'LANG=en_US.UTF-8'  > /etc/locale.conf #设置语言
-passwd root #设置root密码
+```
 
-# 设置引导
+设置密码
+
+```bash
+passwd root
+```
+#### 引导相关
+
+安装引导
+
+```bash
 grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=ArchLinux
-vim /etc/default/grub
-# 修改配置 GRUB_CMDLINE_LINUX_DEFAULT ="loglevel=5 nowatchdog modprobe.blacklist=sp5100_tco"
-# 启用 GRUB_DISABLE_OS_PROBER=false
-grub-mkconfig -o /boot/grub/grub.cfg
+```
 
+编辑
+
+```bash
+vim /etc/default/grub
+```
+
+修改配置 `GRUB_CMDLINE_LINUX_DEFAULT`
+
+```bash
+GRUB_CMDLINE_LINUX_DEFAULT ="loglevel=5 nowatchdog modprobe.blacklist=sp5100_tco"
+```
+
+取消注释 `GRUB_DISABLE_OS_PROBER`
+
+```bash
+GRUB_DISABLE_OS_PROBER = false
+
+```
+
+生成引导配置文件
+
+```bash
+grub-mkconfig -o /boot/grub/grub.cfg
+```
+
+## 卸载挂载点并重启
+
+```bash
 exit 
 umount -R /mnt
 reboot
@@ -247,10 +367,13 @@ reboot
 
 # 第一次进入系统（root）
 
+## 启动基础服务
+
 ```bash
 systemctl enable --now NetworkManager
 systemctl enable --now sshd # (可选) 启动sshd服务
 ```
+
 ## (可选) 连接 wifi
 
 ```bash
@@ -258,20 +381,32 @@ nmcli dev wifi list
 nmcli dev wifi connect "SSID" password "password" 
 ```
 
-## [使用 ssh 安装](#使用-ssh-安装)
+## [(可选) 使用 ssh 安装](#使用-ssh-安装)
 
-## [修改 Arch 仓库镜像站](#修改-Arch-仓库镜像站)
+## 修改镜像站和仓库
 
-## [添加cachyos软件源](#添加cachyos软件源)
+### [修改 Arch 仓库镜像站](#修改-Arch-仓库镜像站)
 
-## 启用 32 位仓库
+### [添加cachyos软件源](#添加cachyos软件源)
+
+### 启用 32 位仓库
+
+编辑
 
 ```bash
 vim /etc/pacman.d/mirrorlist
-# 启用 [multilib] 项的内容
 ```
 
-## 安装软件
+取消 `[multilib]` 项前的注释
+
+```ini
+[multilib]
+Include = /etc/pacman.d/mirrorlist
+```
+
+## 软件相关
+
+### 安装软件
 
 ```bash
 pacman -S fastfetch amd-ucode nvidia-open-dkms lib32-nvidia-utils nvidia-utils nvidia-settings libva-nvidia-driver vulkan-radeon vulkan-mesa-layers libva libva-utils power-profiles-daemon vulkan-icd-loader snapper btrfs-assistant grub-btrfs inotify-tools asusctl rog-control-center plasma-meta konsole dolphin egl-wayland ark kleopatra partitionmanager sof-firmware alsa-firmware alsa-ucm-conf fcitx5-im fcitx5-chinese-addons fcitx5-rime fcitx5-configtool wqy-zenhei noto-fonts noto-fonts-cjk noto-fonts-emoji noto-fonts-extra ntfs-3g paru starship firewalld greetd greetd-tuigreet
@@ -283,63 +418,137 @@ pacman -S fastfetch amd-ucode nvidia-open-dkms lib32-nvidia-utils nvidia-utils n
 |amd-ucode|AMD 微码驱动|
 |nvidia-open-dkms lib32-nvidia-utils nvidia-utils nvidia-settings libva-nvidia-driver|Nvidia 独显相关||
 |vulkan-radeon vulkan-mesa-layers libva libva-utils|AMD 核显相关|
-|power-profiles-daemon|电源|
+|power-profiles-daemon|电源管理|
 |vulkan-icd-loader|Vlkan 管理|
 |snapper btrfs-assistant|Btrfs 快照工具||
 |grub-btrfs inotify-tools|(可选) Grub 的 Btrfs 工具, 防滚挂|
-|asusctl rog-control-center|(可选) 华硕相关|
-|plasma-meta konsole dolphin egl-wayland ark kleopatra partitionmanager|kde 以及相关工具||
-|sof-firmware alsa-firmware alsa-ucm-conf|声音相关|
+|asusctl rog-control-center|华硕相关|
+|plasma-meta konsole dolphin egl-wayland ark kleopatra partitionmanager|KDE 及相关工具||
+|sof-firmware alsa-firmware alsa-ucm-conf|音频相关|
 |fcitx5-im fcitx5-chinese-addons fcitx5-rime fcitx5-configtool|输入法||
-|wqy-zenhei noto-fonts noto-fonts-cjk noto-fonts-emoji noto-fonts-extra|字体|
-|ntfs-3g|NTFS驱动|
-|paru|AUR相关|
+|wqy-zenhei noto-fonts noto-fonts-cjk noto-fonts-emoji noto-fonts-extra|中文字体|
+|ntfs-3g|NTFS 驱动|
+|paru|AUR 管理器|
 |starship|(可选) 终端美化|
 |firewalld|(可选) 防火墙|
 |greetd greetd-tuigreet|(可选) 登录管理器, 也可以用 kde 自带的sddm||
 
+### (可选) 卸载软件
+
+```bash
+pacman -Rns discover sddm-kcm sddm 
+# 如果你打算使用 greetd, 可以卸载 kde 自带的 sddm
+# discover 软件中心有元数据更新问题, 可以卸载
 ```
+
+## 账户设置
+
+修改全局文本编辑器
+
+```bash
 vim ~/.bash_profile
-# 写入 export EDITOR='vim'
+```
 
-# 添加账户
-useradd -m -G wheel,uccp -s /bin/zsh kinntaku # 笔者需要嵌入式开发, 添加了 uccp 组, 普通用户可以不添加
+写入 
+
+```bash
+export EDITOR='vim'
+```
+
+添加账户
+
+```bash
+useradd -m -G wheel,uccp -s /bin/zsh kinntaku # 选择你喜欢的用户名
+# 笔者需要嵌入式开发, 添加了 uccp 组, 普通用户可以不添加
 passwd kinntaku
+```
+编辑用户权限
 
-# 美化 vim
-vim ~/.vimrc 
-# 添加
-# set number
-# colorscheme evening
-# syntax on
-
+```bash
 EDITOR=vim visudo
-# 取消注释 %wheel ALL=(ALL:ALL) ALL
+```
 
+取消注释
 
-# (选择1) 若使用 sddm
+```bash
+%wheel ALL=(ALL:ALL) ALL
+```
+
+## 美化 vim
+
+编辑
+
+```bash
+vim ~/.vimrc 
+```
+
+写入
+
+```bash
+set number
+colorscheme evening
+syntax on
+```
+
+## 登录管理器
+
+### (选择1) 若使用 sddm
+
+启用服务
+
+```bash
 sudo systemctl start sddm
+```
 
-# (选择2) 若使用 greetd
+### (选择2) 若使用 greetd
+
+编辑 greetd 配置文件
+
+```bash
 vim /etc/greetd/config.toml
-pacman -Rns discover sddm-kcm sddm # (可选) 卸载 kde 自带的 sddm
-# command = "tuigreet --time --remember --cmd startplasma-wayland"
-# user = "kinntaku"
-systemctl enable --now grub-btrfsd
-systemctl enable --now power-profiles-daemon.service
-systemctl enable greetd.service
-systemctl --user enable --now pipewire pipewire-pulse wireplumber
+```
+修改为以下内容
 
+```bash
+command = "tuigreet --time --remember --cmd startplasma-wayland"
+user = "kinntaku"
+```
+
+启用服务
+
+```bash
+systemctl enable greetd.service
+```
+
+## 启用系统服务
+
+```
+systemctl enable --now grub-btrfsd # (可选) 启用 grub-btrfs 服务
+systemctl enable --now power-profiles-daemon.service
+systemctl --user enable --now pipewire pipewire-pulse wireplumber
+```
+
+重启
+
+```
 reboot
 ```
 
 # 第二次进入系统（rootless）
 
-```
-# (可选)安装提前准备的 flclash
-sudo paru -U flclash-bin-0.8.90-1-x86_64.pkg.tar.zst
+## 安装软件
 
-# 安装软件
+### (可选) 安装提前准备的 flclash
+
+```
+# 进入到提前下载好的 flclash 包所在目录
+makepkg
+sudo paru -U flclash-bin-xxx.tar.zst
+```
+
+### 安装用户软件
+
+```bash
 sudo pacman -S podman xorg-xhost lazydocker distrobox nvidia-container-toolkit picocom cmake jdk21-openjdk obs-studio chromium virt-manager pandoc vlc ffmpeg vlc-plugin-ffmpeg steam blender gimp krita kdenlive   
 sudo paru -S appimagelauncher wps-office-cn wps-office-mui-zh-cn wemeet-bin linuxqq wechat-bin
 
@@ -358,51 +567,102 @@ sudo paru -S appimagelauncher wps-office-cn wps-office-mui-zh-cn wemeet-bin linu
 |steam|(可选) 游戏|
 |blender gimp krita kdenlive|(可选) 生产力工具|
 |appimagelauncher|(可选) AppImage安装器|
-|ps-office-cn wps-office-mui-zh-cn|(可选) wps相关|
+|wps-office-cn wps-office-mui-zh-cn|(可选) wps相关|
 |wemeet-bin linuxqq wechat-bin|(可选) 通讯工具|
 
-
+### (可选) 安装 micromamba
+```bash
+"${SHELL}" <(curl -L micro.mamba.pm/install.sh) 
 ```
-"${SHELL}" <(curl -L micro.mamba.pm/install.sh) # (可选) 安装 micromamba
 
-# (可选) 安装 nvidia-laptop-power-cfg 
+### 安装 nvidia-laptop-power-cfg 
+
+```bash
 git clone https://gitlab.com/asus-linux/nvidia-laptop-power-cfg.git 
 cd nvidia-laptop-power-cfg 
 makepkg -sfi
 systemctl enable nvidia-suspend.service nvidia-hibernate.service nvidia-resume.service
 systemctl enable --now nvidia-powerd
+```
 
+## 修改防火墙设置
 
+```bash
 sudo firewall-cmd --add-interface=FlClash --zone=trusted --permanent
 sudo firewall-cmd --permanent --add-service=ms-wbt
-sudo firewall-cmd --zone=public -add-port=53317/tcp --permanent
-sudo firewall-cmd --zone=public -add-port=53317/udp --permanent
+sudo firewall-cmd --zone=public -add-port=53317/tcp --permanent # (可选) 这是LocalSend 的端口, 如果不用可以不开
+sudo firewall-cmd --zone=public -add-port=53317/udp --permanent # (可选) 这是LocalSend 的端口, 如果不用可以不开
 sudo firewall-cmd --reload
+```
 
-# 修改关机超时
+## 修改关机超时
+
+编辑
+
+```bash
 sudo vim /etc/systemd/system.conf
-# DefaultTimeoutStopSec=10s
 ```
 
-# 第三次进入系统（rootless）
+取消注释并修改为 10s
 
+```bash
+DefaultTimeoutStopSec=10s
 ```
-cat /proc/driver/nvidia/gpus/bus_address/power # 查看显卡是否动态启动, 其中 bus_address 需要换成具体数值
+
+## 阻止usb外设唤醒电脑
+
+创建系统服务
+
+```bash
+sudo vim /etc/systemd/system/disable-xhc-wakeup.service
 ```
 
-## fcitx
+```ini
+[Unit]
+Description=Disable all XHC wakeup devices
+After=multi-user.target
 
+[Service]
+Type=oneshot
+ExecStart=/bin/bash -c "grep XHC /proc/acpi/wakeup | awk '{print $1}' | while read dev; do echo $dev | tee /proc/acpi/wakeup; done"
+RemainAfterExit=true
+
+[Install]
+WantedBy=multi-user.target
+```
+
+启用并检查
+
+```bash
+sudo systemctl enable --now disable-xhc-wakeup.service
+cat /proc/acpi/wakeup | grep XHC # 检查外设是否变为disabled
+```
+
+## fcitx 设置
+
+编辑
+
+```bash
 sudo vim /etc/profile
-
 ```
+
+添加
+
+```bash
 export GTK_IM_MODULE=fcitx5
 export QT_IM_MODULE=fcitx5
 export XMODIFIERS=@im=fcitx5
 ```
 
-sudo vim /etc/environment
+编辑
 
+```bash
+sudo vim /etc/environment
 ```
+
+添加
+
+```bash
 XIM=fcitx5
 XIM_PROGRAM=fcitx5
 GTK_IM_MODULE=fcitx5
@@ -411,56 +671,120 @@ XMODIFIERS=@im=fcitx5
 SDL_IM_MODULE=fcitx5
 GLFW_IM_MODULE=fcitx5
 ```
+编辑
 
-wanxiang.dict.yaml
+```bash
+vim ~/.config/gtk-3.0/settings.ini
+```
+
+添加
+
+```bash
+gtk-im-module = fcitx
+```
+
+# 第三次进入系统（rootless）
+
+## 查看显卡是否动态启动
+
+```bash
+cat /proc/driver/nvidia/gpus/0000:01:00.0/power #其中 0000:01:00.0 换成你自己的地址
+```
+会输出类似
+
+```bash
+Runtime D3 status:          Enabled (fine-grained)
+Video Memory:               Off
+
+GPU Hardware Support:
+ Video Memory Self Refresh: Supported
+ Video Memory Off:          Supported
+
+S0ix Power Management:
+ Platform Support:          Supported
+ Status:                    Enabled
+
+Notebook Dynamic Boost:     Supported
+```
+## 软件设置
+
+### 设置 fcitx 万象拼音
+
+Plasma设置 - 输入法 - 配置附加组件 - 经典用户界面 - 主题：默认深色，深色主题：默认深色
+Plasma设置 - 输入法 - 配置附加组件 - 添加输入法 - 中州韵 
+Plasma设置 - 输入法 - 配置全局选项 - 切换输入法：Super+空格，在程序中显示预编辑文本：off
+
+编辑 `wanxiang.dict.yaml`
+
+添加新词库
 
 ```yaml
 - dicts/tone_moe
 ```
 
-default.yaml
+修改 `default.yaml`
 
-```
+注释掉快捷键, 防止和 vscode 冲突
+
+```ini
 # - Control+grave
 ```
 
-wanxiang.schema.yaml
+修改 `wanxiang.schema.yaml`
 
-```
-spelling_hints: 0
-tips_key: "Control+q"
-```
-
-sudo vim ~/.config/gtk-3.0/settings.ini
+调整设置
 
 ```ini
-gtk-im-module = fcitx
+spelling_hints: 0 # 取消拼音显示
+tips_key: "Control+q" # 设置快速输入提示键为 Ctrl + Q
 ```
 
-## console(miniconda starship distrobox vim)
+### micromamba
 
-vim ~/.vimrc
+编辑
 
 ```bash
-set number
-syntax on
+vim ~/.zshrc
 ```
 
-vim ~/.zshrc
+添加
+
 
 ```bash
 alias conda='micromamba'
-export PATH="/home/kinntaku/Applications/mujoco-3.3.7/bin:$PATH"
-eval "$(starship init zsh)"
-PATH=$PATH:$HOME/.local/podman/bin:$HOME/.local/bin
-xhost +si:localuser:$USER
-export DOCKER_HOST=unix:///run/user/1000/podman/podman.sock
-alias docker='podman'
 ```
 
+(可选) 如果使用 starship 终端美化, 禁用 micromamba 修改提示符
+
+```
 micromamba config set changeps1 false
+```
+
+### starship 终端美化
+
+编辑
+
+```bash
+vim ~/.zshrc
+```
+
+添加
+
+```bash
+eval "$(starship init zsh)"
+```
+
+新建主题
+
+```bash
 starship preset tokyo-night -o ~/.config/starship.toml
+```
+
+编辑
+
+```bash
 vim ~/.config/starship.toml
+```
 
 ```toml
 "$schema" = 'https://starship.rs/config-schema.json'
@@ -537,50 +861,77 @@ style = "bg:#1d2230"
 format = '[[  $time ](fg:#a0a9cb bg:#1d2230)]($style)'
 ```
 
+### podman 和 distrobox 设置
 
-## 部分傻逼软件的快捷方式修复
+编辑
 
-qq:
--enable-features=UseOzonePlatform -ozone-platform=wayland --enable-wayland-ime --wayland-text-input-version=3
-
-wechat:
-QT_IM_MODULE=fcitx XMODIFIERS=@im=fcitx GTK_IM_MODULE=fcitx
-
-
-## stop usb device wake up laptop
-
-sudo vim /etc/systemd/system/disable-xhc-wakeup.service
-
-```ini
-[Unit]
-Description=Disable all XHC wakeup devices
-After=multi-user.target
-
-[Service]
-Type=oneshot
-ExecStart=/bin/bash -c "grep XHC /proc/acpi/wakeup | awk '{print $1}' | while read dev; do echo $dev | tee /proc/acpi/wakeup; done"
-RemainAfterExit=true
-
-[Install]
-WantedBy=multi-user.target
+```bash
+vim ~/.zshrc
 ```
 
-sudo systemctl enable disable-xhc-wakeup.service
-sudo systemctl start disable-xhc-wakeup.service
-cat /proc/acpi/wakeup | grep XHC
+添加
+
+```bash
+PATH=$PATH:$HOME/.local/podman/bin:$HOME/.local/bin
+xhost +si:localuser:$USER
+export DOCKER_HOST=unix:///run/user/1000/podman/podman.sock
+alias docker='podman'
+```
+
+### mujoco 设置
+
+编辑
+
+```bash
+vim ~/.zshrc
+```
+
+添加路径
+
+```bash
+export PATH="/home/kinntaku/Applications/mujoco-3.3.7/bin:$PATH"
+```
+
+### 部分傻逼软件的快捷方式修复
 
 
-## chromium
+- qq: 添加启动参数
+   ```bash
+   -enable-features=UseOzonePlatform -ozone-platform=wayland --enable-wayland-ime --wayland-text-input-version=3
+   ```
+
+- wechat: 添加环境变量
+   ```bash
+   QT_IM_MODULE=fcitx XMODIFIERS=@im=fcitx GTK_IM_MODULE=fcitx
+   ```
+
+### chromium
+
+如果出现 twitter 无法登录可以尝试添加以下启动参数
+
+```bash
 --use-spdy=off
-https://chromewebstore.google.com/detail/%E5%B0%8F%E8%88%92%E5%90%8C%E5%AD%A6-%E5%9F%BA%E4%BA%8E%E4%B9%A6%E7%AD%BE%E7%9A%84%E6%96%B0%E6%A0%87%E7%AD%BE%E9%A1%B5/eldcinofoklpfhaanlhmkmadehfgcnon
-https://chromewebstore.google.com/detail/bitwarden-%E5%AF%86%E7%A0%81%E7%AE%A1%E7%90%86%E5%99%A8/nngceckbapebfimnlniiiahkandclblb
-https://chromewebstore.google.com/detail/allow-copy-+/ajhbdcgfhlhhmocddefknjjkejcfpbnj
-https://chromewebstore.google.com/detail/%E7%AF%A1%E6%94%B9%E7%8C%B4/dhdgffkkebhmkfjojejmpbldmpobfkfo
-https://greasyfork.org/zh-CN/scripts/420352-csdn-focus
-https://greasyfork.org/zh-CN/scripts/413228-bilibili%E8%A7%86%E9%A2%91%E4%B8%8B%E8%BD%BD
+```
 
+安装扩展
 
-## vscode
+|名称|地址|
+|---|---|
+|小舒同学|https://chromewebstore.google.com/detail/%E5%B0%8F%E8%88%92%E5%90%8C%E5%AD%A6-%E5%9F%BA%E4%BA%8E%E4%B9%A6%E7%AD%BE%E7%9A%84%E6%96%B0%E6%A0%87%E7%AD%BE%E9%A1%B5/eldcinofoklpfhaanlhmkmadehfgcnon|
+|Bitwarden|https://chromewebstore.google.com/detail/bitwarden-%E5%AF%86%E7%A0%81%E7%AE%A1%E7%90%86%E5%99%A8/nngceckbapebfimnlniiiahkandclblb|
+|Allow Copy +|https://chromewebstore.google.com/detail/allow-copy-+/ajhbdcgfhlhhmocddefknjjkejcfpbnj|
+|Tampermonkey|https://chromewebstore.google.com/detail/%E7%AF%A1%E6%94%B9%E7%8C%B4/dhdgffkkebhmkfjojejmpbldmpobfkfo|
+|FireShot|https://chromewebstore.google.com/detail/take-webpage-screenshots/mcbpblocgmgfnpjjppndjkmgjaogfceg|
+|Imagus Reborn|https://chromewebstore.google.com/detail/imagus-reborn/fcjmgeodgobggcppooncdagfkogfffdm|
+
+安装油猴脚本
+
+|名称|地址|
+|---|---|
+|CSDN Focus|https://greasyfork.org/zh-CN/scripts/420352-csdn-focus|
+|Bilibili 视频下载|https://greasyfork.org/zh-CN/scripts/413228-bilibili%E8%A7%86%E9%A2%91%E4%B8%8B%E8%BD%BD|
+
+### vscode
 
 ```json
 "files.autoSave": "afterDelay",
@@ -655,25 +1006,44 @@ https://greasyfork.org/zh-CN/scripts/413228-bilibili%E8%A7%86%E9%A2%91%E4%B8%8B%
 
 ```
 
-## distrobox
+### distrobox
 https://hub.docker.com/r/nvidia/cuda
 
+设置配置
+
+```bash
 sudo nvidia-ctk cdi generate --output=/etc/cdi/nvidia.yaml
 sudo nvidia-ctk runtime config  ure --runtime=docker
 sudo systemctl restart docker
 systemctl --user enable --now podman.socket
+```
 
-distrobox create --name ubuntu2204 --additional-flags "--device nvidia.com/gpu=all" --image docker.io/nvidia/cuda:12.8.0-cudnn-devel-ubuntu22.04 --home /home/kinntaku/Documents/distrobox/ubuntu2204_home
-sudo apt install libqt5gui5 -y
+- 创建带cuda的Ubuntu容器
 
-debian13
+   ```bash
+   distrobox create --name ubuntu2204 --additional-flags "--device nvidia.com/gpu=all" --image docker.io/nvidia/cuda:12.8.0-cudnn-devel-ubuntu22.04 --home /home/kinntaku/Documents/distrobox/ubuntu2204_home
+   ```
+   容器内如出现无法调用 xserver 可以尝试
+
+   ```bash
+   sudo apt install libqt5gui5 -y
+   ```
+
+- 创建用于嵌入式开发的 debian 容器
+
+```bash
 distrobox create --name debian13 --image docker.io/library/debian:trixie-slim --home /home/kinntaku/Documents/distrobox/debian13_home
-sudo apt install build-essential curl wget binutils-arm-none-eabi gcc-arm-none-eabi libstdc++-arm-none-eabi-newlib gdb-multiarch
-sudo apt install make cmake
+```
 
+软件安装
 
-C/C++: Edit Configurations (JSON)
-.vscode/c_cpp_properties.json
+```bash
+sudo apt install build-essential curl wget binutils-arm-none-eabi gcc-arm-none-eabi libstdc++-arm-none-eabi-newlib gdb-multiarch openocd make cmake
+```
+
+编辑 vscode 项目配置 `C/C++: Edit Configurations (JSON)`
+
+编辑 `.vscode/c_cpp_properties.json`
 
 ```json
 {
@@ -696,37 +1066,81 @@ C/C++: Edit Configurations (JSON)
    "version": 4
 }
 ```
-## latex
 
+注意 `STM32F103xE` 来自项目工程的名称
+
+### latex
+
+拉取镜像
+
+```bash
 podman pull docker.io/texlive/texlive
+```
 
+创建容器
+
+```bash
 podman run -it \
   --name kinntakutexbox \
   -v ~/Documents/Latex/texproject1:/alltex/texproject1 \
   -w /alltex/texproject1 \
   texlive/texlive \
   bash
+```
 
+重新启用
+
+```bash
 podman start -ai kinntakutexbox
+```
 
+安装字体
+
+```bash
 tlmgr install fandol
+```
 
+###  minegrub
 
-## minegrub
+编辑 `./minegrub-world-selection/theme.txt`
+所有 top 属性都加上 45
 
+复制到主题目录
+
+```bash
+mkdir -p /boot/grub/themes/
 sudo cp -ruv ./minegrub-world-selection /boot/grub/themes/
+```
+
+编辑 grub 文件
+
+```bash
 sudo vim /etc/default/grub
+```
+
+修改设置
+
+
+```bash
 GRUB_TERMINAL_OUTPUT=gfxterm
 GRUB_THEME=/boot/grub/themes/minegrub-world-selection/theme.txt
-sudo vim /boot/grub/themes/minegrub-world-selection/theme.txt
-top + 45
+```
+
+创建 grub 配置
+
+```bash
 sudo grub-mkconfig -o /boot/grub/grub.cfg
+```
 
-## labelme
+### labelme
 
+```bash
 conda create -n labelme python=3.13
 conda activate labelme
 pip install labelme
+```
+
+创建快捷方式
 
 ```bash
 #!/bin/bash
@@ -734,13 +1148,19 @@ export QT_QPA_PLATFORM=xcb
 micromamba run -n labelme labelme
 ```
 
-## pdfmathtranslate-next
+### pdfmathtranslate-next
 
+使用 docker
+
+```bash
 podman pull docker.io/awwaawwa/pdfmathtranslate-next
 podman run -d -p 7860:7860 docker.io/awwaawwa/pdfmathtranslate-next
 http://127.0.0.1:7860
+```
 
-## Minecraft
+### Minecraft
+
+创建 hmcl 的快捷方式
 
 ```bash
 #!/bin/bash
@@ -749,11 +1169,16 @@ export __GLX_VENDOR_LIBRARY_NAME=nvidia
 java -Dglass.gtk.uiScale=1.5 -jar ~/Applications/Minecraft/HMCL-3.8.0.304.jar
 ```
 
-## 其他的软件设置
+### Kirta
 
+```
 Kirta - 笔刷 - 笔刷编辑器 - 大小 - 覆盖旧笔刷 - 保存
 Kirta - 设置 - 配置Kirta - 笔刷光标图标 - 箭头 - 笔刷轮廓形状 - 圆形轮廓
+```
 
+### plasma
+
+```
 Plasma设置 - 快速设置 - 主题：微风深色，动效速度：即时 - 应用
 Plasma设置 - 鼠标和触摸板 - 触摸板 - 反向滚动 - 应用
 Plasma设置 - 键盘 - 虚拟键盘 - Fcitx5Wayland - 应用
@@ -762,16 +1187,14 @@ Plasma设置 - 远程桌面 - 勾选系统用户，登录时自动启动，响�
 Plasma设置 - 文字和字体 - 字体管理 - 安装字体文件
 Plasma设置 - 电源管理 - 空闲时：无操作，按下电源键时：显示注销屏幕
 Plasma设置 - 锁屏 - 自动锁定屏幕：不自动锁屏
-Plasma设置 - 输入法 - 配置附加组件 - 经典用户界面 - 主题：默认深色，深色主题：默认深色
-Plasma设置 - 输入法 - 配置附加组件 - 添加输入法 - 中州韵 
-Plasma设置 - 输入法 - 配置全局选项 - 切换输入法：Super+空格，在程序中显示预编辑文本：off
+```
 
+### Github  
 
-## Github
-
+```bash
 git config --global user.name "你的名字"
 git config --global user.email "你的邮箱"
 ssh-keygen -t ed25519 -C "你的邮箱"
 cat ~/.ssh/id_ed25519.pub
 ssh -T git@github.com
- 
+```
