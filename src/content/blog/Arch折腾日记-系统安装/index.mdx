@@ -19,6 +19,58 @@ image: './banner.png'
 
 - GPU2: NVIDIA GeForce RTX 4060 Laptop GPU
 
+# 安装前的准备
+
+## 下载 内容
+
+1. Arch Linux 镜像
+
+   - [Arch Linux 官方镜像下载地址](https://archlinux.org/download/)
+
+   - [Arch Linux 中国镜像站下载地址](https://mirrors.ustc.edu.cn/archlinux/iso/latest/)
+
+2. ventoy
+
+   - [ventoy 官方下载地址](https://www.ventoy.net/en/download.html)
+
+3. Flclash build 包
+
+   - [Flclash AUR 包](https://aur.archlinux.org/packages/flclash-bin)
+
+      下载 `Package Actions` 中的 `Download snapshot`
+      
+      下载 `Source` 中的 全部文件
+
+4. 万象拼音
+
+   - [万象拼音 Releases](https://github.com/amzxyz/rime_wanxiang/releases)
+
+      下载 最新的 `Rime万象拼音输入方案` 中的 `rime-wanxiang-base.zip`
+
+      如果有更新的 `实时提交的词库更新` 下载 `base-dicts.zip` 如果词库比输入方案旧则不用下载
+
+   - [语法模型](https://github.com/amzxyz/RIME-LMDG/releases/download/LTS/wanxiang-lts-zh-hans.gram)
+
+   - [萌娘词库](https://github.com/suiginko/moetype/releases)
+
+      下载最新的 `tone_moe.dict.yaml`
+
+5. 需要的 AppImage
+
+   - [Motrix](https://motrix.app/download): 一款下载器
+   
+   - [LocalSend](https://localsend.org/zh-CN/download): 局域网文件传输工具
+
+   - [QQ 音乐](https://y.qq.com/download/download.html)
+
+   - [PureRef](https://www.pureref.com/download.php): 一款绘画参考图查看工具
+
+      Linux 下载中选择 `Portable` 然后 `Select amount` 中选择第三个 `Custom Amount` 输入 `0` 即可下载免费版
+
+   - [QtScrcpy](https://github.com/barry-ran/QtScrcpy/releases): 一款安卓投屏工具
+
+## [Ventoy 制作启动盘](https://www.ventoy.net/cn/doc_start.html)
+
 # 系统安装 (Live CD)
 
 ## chroot 前
@@ -540,8 +592,11 @@ reboot
 
 ### (可选) 安装提前准备的 flclash
 
+解压之前下载的 `flclash-bin.tar.gz` 在文件夹中创建 `src` 文件夹, 并将在 `Source` 中下载的所有文件放入 `src` 文件夹中
+
+进入到提前下载好的 flclash 包所在目录
+
 ```
-# 进入到提前下载好的 flclash 包所在目录
 makepkg
 sudo paru -U flclash-bin-xxx.tar.zst
 ```
@@ -710,9 +765,25 @@ Notebook Dynamic Boost:     Supported
 
 ### 设置 fcitx 万象拼音
 
+
+Plasma设置 - 键盘 - 虚拟键盘 - Fcitx 5 Wayland启动器 (实验性)
+
 Plasma设置 - 输入法 - 配置附加组件 - 经典用户界面 - 主题：默认深色，深色主题：默认深色
+
 Plasma设置 - 输入法 - 配置附加组件 - 添加输入法 - 中州韵 
-Plasma设置 - 输入法 - 配置全局选项 - 切换输入法：Super+空格，在程序中显示预编辑文本：off
+
+Plasma设置 - 输入法 - 配置全局选项 - 切换输入法: Super+空格, 在程序中显示预编辑文本: off
+
+
+打开 `~/.local/share/fcitx5/rime/`
+
+将语法模型wanxiang-lts-zh-hans.gram文件放入这个目录。
+
+把之前下载的方案压缩包(.zip)解压, 然后将解压出来的所有文件和文件夹放入这个目录 (注意不包含压缩包根目录, 其中default.yaml是rime配置, weasel.yaml是小狼毫皮肤等配置, 可选择性放入)
+
+如果有更新的词库文件,将里面的内容覆盖放到 `dicts` 文件夹中
+
+将萌娘词库文件 `tone_moe.dict.yaml` 放入 `dicts` 目录下
 
 编辑 `wanxiang.dict.yaml`
 
@@ -738,6 +809,8 @@ Plasma设置 - 输入法 - 配置全局选项 - 切换输入法：Super+空格�
 spelling_hints: 0 # 取消拼音显示
 tips_key: "Control+q" # 设置快速输入提示键为 Ctrl + Q
 ```
+
+右键任务栏 Fcitx 图标 - 选择中州韵 - 右键地球图标项 - 选择重新部署
 
 ### micromamba
 
@@ -1171,23 +1244,29 @@ java -Dglass.gtk.uiScale=1.5 -jar ~/Applications/Minecraft/HMCL-3.8.0.304.jar
 
 ### Kirta
 
-```
 Kirta - 笔刷 - 笔刷编辑器 - 大小 - 覆盖旧笔刷 - 保存
+
 Kirta - 设置 - 配置Kirta - 笔刷光标图标 - 箭头 - 笔刷轮廓形状 - 圆形轮廓
-```
+
 
 ### plasma
 
-```
+
 Plasma设置 - 快速设置 - 主题：微风深色，动效速度：即时 - 应用
+
 Plasma设置 - 鼠标和触摸板 - 触摸板 - 反向滚动 - 应用
+
 Plasma设置 - 键盘 - 虚拟键盘 - Fcitx5Wayland - 应用
+
 Plasma设置 - 键盘 - 快捷键 - Spectacle截图工具 - 默认快捷键 - 取消勾选 - 应用
+
 Plasma设置 - 远程桌面 - 勾选系统用户，登录时自动启动，响应速度 - 应用 - 启用rdp服务器
+
 Plasma设置 - 文字和字体 - 字体管理 - 安装字体文件
+
 Plasma设置 - 电源管理 - 空闲时：无操作，按下电源键时：显示注销屏幕
+
 Plasma设置 - 锁屏 - 自动锁定屏幕：不自动锁屏
-```
 
 ### Github  
 

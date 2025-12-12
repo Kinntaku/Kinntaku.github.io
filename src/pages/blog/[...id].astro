@@ -227,6 +227,98 @@ const tocSections = await getTOCSections(currentPostId)
       <Content />
     </article>
 
+    <!-- Giscus 评论系统 -->
+    <div class="col-start-2 mt-8" id="giscus-container"></div>
+
+    <script is:inline>
+      // 预加载 Giscus 脚本以提升性能
+      const link = document.createElement('link')
+      link.rel = 'preload'
+      link.href = 'https://giscus.app/client.js'
+      link.as = 'script'
+      document.head.appendChild(link)
+      // 动态加载 Giscus 评论系统，确保初始主题匹配
+      function loadGiscus() {
+        const theme =
+          document.documentElement.getAttribute('data-theme') || 'light'
+        const giscusTheme = theme === 'dark' ? 'dark' : 'light'
+
+        // 检查是否已经加载过，避免重复加载
+        if (document.querySelector('script[data-repo*="Kinntaku"]')) {
+          updateGiscusTheme()
+          return
+        }
+
+        // 创建 Giscus 脚本
+        const script = document.createElement('script')
+        script.src = 'https://giscus.app/client.js'
+        script.setAttribute('data-repo', 'Kinntaku/Kinntaku.github.io')
+        script.setAttribute('data-repo-id', 'R_kgDOQmv6pw')
+        script.setAttribute('data-category', 'Announcements')
+        script.setAttribute('data-category-id', 'DIC_kwDOQmv6p84CzsLp')
+        script.setAttribute('data-mapping', 'pathname')
+        script.setAttribute('data-strict', '0')
+        script.setAttribute('data-reactions-enabled', '1')
+        script.setAttribute('data-emit-metadata', '0')
+        script.setAttribute('data-input-position', 'bottom')
+        script.setAttribute('data-theme', giscusTheme)
+        script.setAttribute('data-lang', 'zh-CN')
+        script.setAttribute('crossorigin', 'anonymous')
+        script.async = true
+
+        // 添加到容器中
+        document.getElementById('giscus-container').appendChild(script)
+      }
+
+      // Giscus 主题同步脚本
+      function updateGiscusTheme() {
+        const theme =
+          document.documentElement.getAttribute('data-theme') || 'light'
+        const giscusTheme = theme === 'dark' ? 'dark' : 'light'
+
+        // 更新 Giscus iframe 的主题
+        const iframe = document.querySelector('iframe.giscus-frame')
+        if (iframe) {
+          iframe.contentWindow.postMessage(
+            {
+              giscus: {
+                setConfig: {
+                  theme: giscusTheme,
+                },
+              },
+            },
+            'https://giscus.app',
+          )
+        }
+      }
+
+      // 页面加载完成后加载 Giscus
+      document.addEventListener('DOMContentLoaded', () => {
+        loadGiscus()
+      })
+
+      // 监听主题变化（带防抖优化）
+      let themeChangeTimeout
+      const observer = new MutationObserver((mutations) => {
+        clearTimeout(themeChangeTimeout)
+        themeChangeTimeout = setTimeout(() => {
+          mutations.forEach((mutation) => {
+            if (
+              mutation.type === 'attributes' &&
+              mutation.attributeName === 'data-theme'
+            ) {
+              updateGiscusTheme()
+            }
+          })
+        }, 100)
+      })
+
+      observer.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['data-theme'],
+      })
+    </script>
+
     {
       (hasChildPosts || isCurrentSubpost) && (
         <SubpostsSidebar
