@@ -1,6 +1,6 @@
 ---
-title: Arch折腾日记-系统安装
-description: Arch折腾日记-系统安装
+title: Arch 安装记录
+description: Arch 安装及配置记录
 date: 2025-05-21
 tags: ['Arch']
 authors: ['kinntaku']
@@ -59,8 +59,6 @@ image: './banner.png'
 
    - [Motrix](https://motrix.app/download): 一款下载器
    
-   - [LocalSend](https://localsend.org/zh-CN/download): 局域网文件传输工具
-
    - [QQ 音乐](https://y.qq.com/download/download.html)
 
    - [PureRef](https://www.pureref.com/download.php): 一款绘画参考图查看工具
@@ -68,6 +66,16 @@ image: './banner.png'
       Linux 下载中选择 `Portable` 然后 `Select amount` 中选择第三个 `Custom Amount` 输入 `0` 即可下载免费版
 
    - [QtScrcpy](https://github.com/barry-ran/QtScrcpy/releases): 一款安卓投屏工具
+
+6. 字体文件
+
+   - [Nerd Fonts](https://www.nerdfonts.com/font-downloads)
+
+      这里选择 `0xProto Nerd Font`
+   
+   - Windows 字体
+
+      从 Windows 系统中拷贝 `C:\Windows\Fonts` 文件夹下的字体文件到一个单独的文件夹中备用
 
 ## [Ventoy 制作启动盘](https://www.ventoy.net/cn/doc_start.html)
 
@@ -300,7 +308,7 @@ df -h #查看挂载情况
 pacman -S archlinux-keyring
 
 # 安装基础组件
-pacstrap -K /mnt base base-devel linux-cachyos linux-cachyos-headers linux-firmware  btrfs-progs networkmanager gvim sudo zsh zsh-completions efibootmgr grub efibootmgr os-prober openssh
+pacstrap -K /mnt base base-devel linux-cachyos linux-cachyos-headers linux-firmware amd-ucode btrfs-progs networkmanager gvim sudo zsh zsh-completions =grub efibootmgr os-prober openssh
 ```
 
 |软件包名称|说明|可选替代|
@@ -308,12 +316,13 @@ pacstrap -K /mnt base base-devel linux-cachyos linux-cachyos-headers linux-firmw
 |base base-devel|基础组件||
 |linux-cachyos linux-cachyos-headers|(可更换) CachyOS 内核及头文件, 如果之前没有添加 CachyOS 镜像源, 需要换更换|linux linux-headers 或 linux-zen linux-zen-headers|
 |linux-firmware|linux 固件||
+|amd-ucode|微码驱动|intel-ucode|
 |btrfs-progs|Btrfs 工具||
 |networkmanager|网络工具||
 |gvim|(可更换) 命令行文本编辑器, gvim 相比 vim 多了剪贴板集成|nano 或 vim 或 micro|
 |sudo|权限工具||
 |zsh zsh-completions|(可更换)终端工具|bash bash-completion|
-|efibootmgr grub efibootmgr os-prober|(可更换) 引导工具,本教程使用grub, 也可以使用 systemd-boot 或 limine||
+|grub efibootmgr os-prober|(可更换) 引导工具,本教程使用grub, 也可以使用 systemd-boot 或 limine||
 |openssh|(可选) sshd 客户端, 方便退出 Live CD 后远程安装系统||
 
 ## chroot 后
@@ -419,6 +428,8 @@ reboot
 
 # 第一次进入系统（root）
 
+使用 root 账户登录
+
 ## 启动基础服务
 
 ```bash
@@ -461,13 +472,12 @@ Include = /etc/pacman.d/mirrorlist
 ### 安装软件
 
 ```bash
-pacman -S fastfetch amd-ucode nvidia-open-dkms lib32-nvidia-utils nvidia-utils nvidia-settings libva-nvidia-driver vulkan-radeon vulkan-mesa-layers libva libva-utils power-profiles-daemon vulkan-icd-loader snapper btrfs-assistant grub-btrfs inotify-tools asusctl rog-control-center plasma-meta konsole dolphin egl-wayland ark kleopatra partitionmanager sof-firmware alsa-firmware alsa-ucm-conf fcitx5-im fcitx5-chinese-addons fcitx5-rime fcitx5-configtool wqy-zenhei noto-fonts noto-fonts-cjk noto-fonts-emoji noto-fonts-extra ntfs-3g paru starship firewalld greetd greetd-tuigreet
+pacman -S fastfetch nvidia-open-dkms lib32-nvidia-utils nvidia-utils nvidia-settings libva-nvidia-driver vulkan-radeon vulkan-mesa-layers libva libva-utils power-profiles-daemon vulkan-icd-loader snapper btrfs-assistant grub-btrfs inotify-tools asusctl rog-control-center plasma-meta konsole dolphin egl-wayland ark kleopatra partitionmanager sof-firmware alsa-firmware alsa-ucm-conf fcitx5-im fcitx5-chinese-addons fcitx5-rime fcitx5-configtool wqy-zenhei noto-fonts noto-fonts-cjk noto-fonts-emoji noto-fonts-extra paru starship firewalld greetd greetd-tuigreet
 ```
 
 |软件包名称|说明|可选替代|
 |---|---|---|
 |fastfetch|(可选) 大家都在用||
-|amd-ucode|AMD 微码驱动|
 |nvidia-open-dkms lib32-nvidia-utils nvidia-utils nvidia-settings libva-nvidia-driver|Nvidia 独显相关||
 |vulkan-radeon vulkan-mesa-layers libva libva-utils|AMD 核显相关|
 |power-profiles-daemon|电源管理|
@@ -479,7 +489,6 @@ pacman -S fastfetch amd-ucode nvidia-open-dkms lib32-nvidia-utils nvidia-utils n
 |sof-firmware alsa-firmware alsa-ucm-conf|音频相关|
 |fcitx5-im fcitx5-chinese-addons fcitx5-rime fcitx5-configtool|输入法||
 |wqy-zenhei noto-fonts noto-fonts-cjk noto-fonts-emoji noto-fonts-extra|中文字体|
-|ntfs-3g|NTFS 驱动|
 |paru|AUR 管理器|
 |starship|(可选) 终端美化|
 |firewalld|(可选) 防火墙|
@@ -526,22 +535,6 @@ EDITOR=vim visudo
 %wheel ALL=(ALL:ALL) ALL
 ```
 
-## 美化 vim
-
-编辑
-
-```bash
-vim ~/.vimrc 
-```
-
-写入
-
-```bash
-set number
-colorscheme evening
-syntax on
-```
-
 ## 登录管理器
 
 ### (选择1) 若使用 sddm
@@ -549,7 +542,7 @@ syntax on
 启用服务
 
 ```bash
-sudo systemctl start sddm
+systemctl start sddm
 ```
 
 ### (选择2) 若使用 greetd
@@ -574,19 +567,23 @@ systemctl enable greetd.service
 
 ## 启用系统服务
 
-```
+```bash
 systemctl enable --now grub-btrfsd # (可选) 启用 grub-btrfs 服务
 systemctl enable --now power-profiles-daemon.service
 systemctl --user enable --now pipewire pipewire-pulse wireplumber
 ```
 
-重启
+## 重启
 
-```
+```bash
 reboot
 ```
 
 # 第二次进入系统（rootless）
+
+## 安装字体
+
+Plasma 设置 - 文字和字体 - 字体管理 - 安装字体 - 系统字体
 
 ## 安装软件
 
@@ -604,7 +601,7 @@ sudo paru -U flclash-bin-xxx.tar.zst
 ### 安装用户软件
 
 ```bash
-sudo pacman -S podman xorg-xhost lazydocker distrobox nvidia-container-toolkit picocom cmake jdk21-openjdk obs-studio chromium virt-manager pandoc vlc ffmpeg vlc-plugin-ffmpeg steam blender gimp krita kdenlive   
+sudo pacman -S podman xorg-xhost lazydocker distrobox nvidia-container-toolkit picocom cmake jdk21-openjdk obs-studio chromium virt-manager pandoc vlc ffmpeg vlc-plugin-ffmpeg steam blender gimp krita kdenlive localsend
 sudo paru -S appimagelauncher wps-office-cn wps-office-mui-zh-cn wemeet-bin linuxqq wechat-bin
 
 ```
@@ -621,6 +618,7 @@ sudo paru -S appimagelauncher wps-office-cn wps-office-mui-zh-cn wemeet-bin linu
 |vlc ffmpeg vlc-plugin-ffmpeg|(可选) 影音工具|
 |steam|(可选) 游戏|
 |blender gimp krita kdenlive|(可选) 生产力工具|
+|localsend|(可选) 局域网文件传输工具|
 |appimagelauncher|(可选) AppImage安装器|
 |wps-office-cn wps-office-mui-zh-cn|(可选) wps相关|
 |wemeet-bin linuxqq wechat-bin|(可选) 通讯工具|
@@ -648,6 +646,22 @@ sudo firewall-cmd --permanent --add-service=ms-wbt
 sudo firewall-cmd --zone=public -add-port=53317/tcp --permanent # (可选) 这是LocalSend 的端口, 如果不用可以不开
 sudo firewall-cmd --zone=public -add-port=53317/udp --permanent # (可选) 这是LocalSend 的端口, 如果不用可以不开
 sudo firewall-cmd --reload
+```
+
+## 美化 vim
+
+编辑
+
+```bash
+vim ~/.vimrc 
+```
+
+写入
+
+```bash
+set number
+colorscheme evening
+syntax on
 ```
 
 ## 修改关机超时
@@ -833,6 +847,24 @@ alias conda='micromamba'
 micromamba config set changeps1 false
 ```
 
+### plasma
+
+Plasma设置 - 快速设置 - 主题：微风深色，动效速度：即时 - 应用
+
+Plasma设置 - 鼠标和触摸板 - 触摸板 - 反向滚动 - 应用
+
+Plasma设置 - 键盘 - 虚拟键盘 - Fcitx5Wayland - 应用
+
+Plasma设置 - 键盘 - 快捷键 - Spectacle截图工具 - 默认快捷键 - 取消勾选 - 应用
+
+Plasma设置 - 远程桌面 - 勾选系统用户，登录时自动启动，响应速度 - 应用 - 启用rdp服务器
+
+Plasma设置 - 文字和字体 - 字体管理 - 安装字体文件
+
+Plasma设置 - 电源管理 - 空闲时：无操作，按下电源键时：显示注销屏幕
+
+Plasma设置 - 锁屏 - 自动锁定屏幕：不自动锁屏
+
 ### starship 终端美化
 
 编辑
@@ -934,6 +966,80 @@ style = "bg:#1d2230"
 format = '[[  $time ](fg:#a0a9cb bg:#1d2230)]($style)'
 ```
 
+###  minegrub
+
+编辑 `./minegrub-world-selection/theme.txt`
+所有 top 属性都加上 45
+
+复制到主题目录
+
+```bash
+mkdir -p /boot/grub/themes/
+sudo cp -ruv ./minegrub-world-selection /boot/grub/themes/
+```
+
+编辑 grub 文件
+
+```bash
+sudo vim /etc/default/grub
+```
+
+修改设置
+
+
+```bash
+GRUB_TERMINAL_OUTPUT=gfxterm
+GRUB_THEME=/boot/grub/themes/minegrub-world-selection/theme.txt
+```
+
+创建 grub 配置
+
+```bash
+sudo grub-mkconfig -o /boot/grub/grub.cfg
+```
+
+### vscode
+
+安装插件 `background`, `Chinese (Simplified) (简体中文) Language Pack for Visual Studio Code`, `Path Intellisense`, `Panda Theme`
+
+
+```json
+"files.autoSave": "afterDelay",
+"files.autoGuessEncoding": true,
+"workbench.list.smoothScrolling": true,
+"editor.cursorSmoothCaretAnimation": "on",
+"editor.smoothScrolling": true,
+"editor.cursorBlinking": "smooth",
+"editor.mouseWheelZoom": true,
+"editor.formatOnPaste": true,
+"editor.formatOnType": true,
+"editor.formatOnSave": true,
+"editor.wordWrap": "on",
+"editor.guides.bracketPairs": true,
+"debug.showBreakpointsInOverviewRuler": true,
+```
+
+设置半透明背景
+
+```json
+"background.fullscreen": {
+   "images": [
+   "你喜欢的背景图片位置"
+   ],
+   "opacity": 0.075,
+   "size": "cover",
+   "position": "center",
+   "interval": 0,
+   "random": false
+},
+```
+
+添加字体
+
+```json
+"editor.fontFamily": "JetBrains Mono, 'Droid Sans Mono', 'monospace', monospace, 'MesloLGS NF'",
+```
+
 ### podman 和 distrobox 设置
 
 编辑
@@ -951,6 +1057,37 @@ export DOCKER_HOST=unix:///run/user/1000/podman/podman.sock
 alias docker='podman'
 ```
 
+设置配置
+
+```bash
+sudo nvidia-ctk cdi generate --output=/etc/cdi/nvidia.yaml
+sudo nvidia-ctk runtime config  ure --runtime=docker
+sudo systemctl restart docker
+systemctl --user enable --now podman.socket
+```
+
+- 创建带cuda的Ubuntu容器
+
+   [从 Nvidia 的从库获取容器名称](https://hub.docker.com/r/nvidia/cuda)
+
+   ```bash
+   distrobox create --name ubuntu2204 --additional-flags "--device nvidia.com/gpu=all" --image docker.io/nvidia/cuda:12.8.0-cudnn-devel-ubuntu22.04 --home /home/kinntaku/Documents/distrobox/ubuntu2204_home
+   ```
+   容器内如出现无法调用 xserver 可以尝试
+
+   ```bash
+   sudo apt install libqt5gui5 -y
+   ```
+配置 VSCode 进行开发
+
+vscode 安装插件 `Remote Development`
+
+修改 vscode 设置
+
+```JSON
+"dev.containers.dockerPath": "podman",
+```
+
 ### mujoco 设置
 
 编辑
@@ -965,18 +1102,6 @@ vim ~/.zshrc
 export PATH="/home/kinntaku/Applications/mujoco-3.3.7/bin:$PATH"
 ```
 
-### 部分傻逼软件的快捷方式修复
-
-
-- qq: 添加启动参数
-   ```bash
-   -enable-features=UseOzonePlatform -ozone-platform=wayland --enable-wayland-ime --wayland-text-input-version=3
-   ```
-
-- wechat: 添加环境变量
-   ```bash
-   QT_IM_MODULE=fcitx XMODIFIERS=@im=fcitx GTK_IM_MODULE=fcitx
-   ```
 
 ### chromium
 
@@ -1004,24 +1129,45 @@ export PATH="/home/kinntaku/Applications/mujoco-3.3.7/bin:$PATH"
 |CSDN Focus|https://greasyfork.org/zh-CN/scripts/420352-csdn-focus|
 |Bilibili 视频下载|https://greasyfork.org/zh-CN/scripts/413228-bilibili%E8%A7%86%E9%A2%91%E4%B8%8B%E8%BD%BD|
 
-### vscode
+
+### latex
+
+拉取镜像
+
+```bash
+podman pull docker.io/texlive/texlive
+```
+
+创建容器
+
+```bash
+podman run -it \
+  --name kinntakutexbox \
+  -v ~/Documents/Latex/texproject1:/alltex/texproject1 \
+  -w /alltex/texproject1 \
+  texlive/texlive \
+  bash
+```
+
+重新启用
+
+```bash
+podman start -ai kinntakutexbox
+```
+
+安装字体
+
+```bash
+tlmgr install fandol
+```
+
+vscode 连接容器
+
+vscode server 安装插件 `LaTeX`, `LaTeX Workshop`
+
+修改 vscode 设置
 
 ```json
-"files.autoSave": "afterDelay",
-"files.autoGuessEncoding": true,
-"workbench.list.smoothScrolling": true,
-"editor.cursorSmoothCaretAnimation": "on",
-"editor.smoothScrolling": true,
-"editor.cursorBlinking": "smooth",
-"editor.mouseWheelZoom": true,
-"editor.formatOnPaste": true,
-"editor.formatOnType": true,
-"editor.formatOnSave": true,
-"editor.wordWrap": "on",
-"editor.guides.bracketPairs": true,
-"debug.showBreakpointsInOverviewRuler": true,
-"dev.containers.dockerPath": "podman",
-"window.titleBarStyle": "native"
 // 鼠标悬停，预览公式时，支持 boldsymbol 宏
 "latex-workshop.hover.preview.mathjax.extensions": [
    "boldsymbol"
@@ -1076,134 +1222,8 @@ export PATH="/home/kinntaku/Applications/mujoco-3.3.7/bin:$PATH"
    "name": "pdflatexmk"
    }
 ],
-
 ```
 
-### distrobox
-https://hub.docker.com/r/nvidia/cuda
-
-设置配置
-
-```bash
-sudo nvidia-ctk cdi generate --output=/etc/cdi/nvidia.yaml
-sudo nvidia-ctk runtime config  ure --runtime=docker
-sudo systemctl restart docker
-systemctl --user enable --now podman.socket
-```
-
-- 创建带cuda的Ubuntu容器
-
-   ```bash
-   distrobox create --name ubuntu2204 --additional-flags "--device nvidia.com/gpu=all" --image docker.io/nvidia/cuda:12.8.0-cudnn-devel-ubuntu22.04 --home /home/kinntaku/Documents/distrobox/ubuntu2204_home
-   ```
-   容器内如出现无法调用 xserver 可以尝试
-
-   ```bash
-   sudo apt install libqt5gui5 -y
-   ```
-
-- 创建用于嵌入式开发的 debian 容器
-
-```bash
-distrobox create --name debian13 --image docker.io/library/debian:trixie-slim --home /home/kinntaku/Documents/distrobox/debian13_home
-```
-
-软件安装
-
-```bash
-sudo apt install build-essential curl wget binutils-arm-none-eabi gcc-arm-none-eabi libstdc++-arm-none-eabi-newlib gdb-multiarch openocd make cmake
-```
-
-编辑 vscode 项目配置 `C/C++: Edit Configurations (JSON)`
-
-编辑 `.vscode/c_cpp_properties.json`
-
-```json
-{
-   "configurations": [
-      {
-         "name": "STM32",
-         "includePath": [
-               "${workspaceFolder}/**"
-         ],
-         "defines": [
-               "STM32F103xE",
-               "USE_HAL_DRIVER"
-         ],
-         "compilerPath": "/usr/bin/arm-none-eabi-gcc",
-         "cStandard": "c11",
-         "cppStandard": "c++17",
-         "intelliSenseMode": "gcc-arm"
-      }
-   ],
-   "version": 4
-}
-```
-
-注意 `STM32F103xE` 来自项目工程的名称
-
-### latex
-
-拉取镜像
-
-```bash
-podman pull docker.io/texlive/texlive
-```
-
-创建容器
-
-```bash
-podman run -it \
-  --name kinntakutexbox \
-  -v ~/Documents/Latex/texproject1:/alltex/texproject1 \
-  -w /alltex/texproject1 \
-  texlive/texlive \
-  bash
-```
-
-重新启用
-
-```bash
-podman start -ai kinntakutexbox
-```
-
-安装字体
-
-```bash
-tlmgr install fandol
-```
-
-###  minegrub
-
-编辑 `./minegrub-world-selection/theme.txt`
-所有 top 属性都加上 45
-
-复制到主题目录
-
-```bash
-mkdir -p /boot/grub/themes/
-sudo cp -ruv ./minegrub-world-selection /boot/grub/themes/
-```
-
-编辑 grub 文件
-
-```bash
-sudo vim /etc/default/grub
-```
-
-修改设置
-
-
-```bash
-GRUB_TERMINAL_OUTPUT=gfxterm
-GRUB_THEME=/boot/grub/themes/minegrub-world-selection/theme.txt
-```
-
-创建 grub 配置
-
-```bash
-sudo grub-mkconfig -o /boot/grub/grub.cfg
-```
 
 ### labelme
 
@@ -1227,7 +1247,7 @@ micromamba run -n labelme labelme
 
 ```bash
 podman pull docker.io/awwaawwa/pdfmathtranslate-next
-podman run -d -p 7860:7860 docker.io/awwaawwa/pdfmathtranslate-next
+podman run --rm -p 7860:7860 docker.io/awwaawwa/pdfmathtranslate-next
 http://127.0.0.1:7860
 ```
 
@@ -1248,26 +1268,6 @@ Kirta - 笔刷 - 笔刷编辑器 - 大小 - 覆盖旧笔刷 - 保存
 
 Kirta - 设置 - 配置Kirta - 笔刷光标图标 - 箭头 - 笔刷轮廓形状 - 圆形轮廓
 
-
-### plasma
-
-
-Plasma设置 - 快速设置 - 主题：微风深色，动效速度：即时 - 应用
-
-Plasma设置 - 鼠标和触摸板 - 触摸板 - 反向滚动 - 应用
-
-Plasma设置 - 键盘 - 虚拟键盘 - Fcitx5Wayland - 应用
-
-Plasma设置 - 键盘 - 快捷键 - Spectacle截图工具 - 默认快捷键 - 取消勾选 - 应用
-
-Plasma设置 - 远程桌面 - 勾选系统用户，登录时自动启动，响应速度 - 应用 - 启用rdp服务器
-
-Plasma设置 - 文字和字体 - 字体管理 - 安装字体文件
-
-Plasma设置 - 电源管理 - 空闲时：无操作，按下电源键时：显示注销屏幕
-
-Plasma设置 - 锁屏 - 自动锁定屏幕：不自动锁屏
-
 ### Github  
 
 ```bash
@@ -1276,4 +1276,110 @@ git config --global user.email "你的邮箱"
 ssh-keygen -t ed25519 -C "你的邮箱"
 cat ~/.ssh/id_ed25519.pub
 ssh -T git@github.com
+```
+
+# 一些奇怪的问题
+
+## 部分傻逼软件的快捷方式修复
+
+- qq: 添加启动参数
+   ```bash
+   -enable-features=UseOzonePlatform -ozone-platform=wayland --enable-wayland-ime --wayland-text-input-version=3
+   ```
+
+- wechat: 添加环境变量
+   ```bash
+   QT_IM_MODULE=fcitx XMODIFIERS=@im=fcitx GTK_IM_MODULE=fcitx
+   ```
+
+## 安装字体导致字体 fallback 链出问题
+
+创建
+
+```bash
+vim /etc/fonts/conf.d/99-my-global.conf
+```
+
+写入
+
+```xml
+<?xml version="1.0"?>
+<!DOCTYPE fontconfig SYSTEM "urn:fontconfig:fonts.dtd">
+<fontconfig>
+
+  <!-- 强制重写 generic family，让它进入 alias 阶段 -->
+  <match target="pattern">
+    <test name="family" compare="eq">
+      <string>sans-serif</string>
+    </test>
+    <edit name="family" mode="assign" binding="same">
+      <string>Noto Sans</string>
+    </edit>
+  </match>
+
+  <match target="pattern">
+    <test name="family" compare="eq">
+      <string>serif</string>
+    </test>
+    <edit name="family" mode="assign" binding="same">
+      <string>Noto Serif</string>
+    </edit>
+  </match>
+
+  <match target="pattern">
+    <test name="family" compare="eq">
+      <string>monospace</string>
+    </test>
+    <edit name="family" mode="assign" binding="same">
+      <string>Noto Sans Mono</string>
+    </edit>
+  </match>
+
+  <!-- Noto Sans 的 fallback 链 -->
+  <alias binding="same">
+    <family>Noto Sans</family>
+    <prefer>
+      <family>Noto Sans CJK SC</family>
+    </prefer>
+  </alias>
+
+  <!-- Noto Serif 的 fallback 链 -->
+  <alias binding="same">
+    <family>Noto Serif</family>
+    <prefer>
+      <family>Noto Serif CJK SC</family>
+    </prefer>
+  </alias>
+
+  <!-- Noto Sans Mono 的 fallback 链 -->
+  <alias binding="same">
+    <family>Noto Sans Mono</family>
+    <prefer>
+      <family>Noto Sans Mono CJK SC</family>
+    </prefer>
+  </alias>
+
+</fontconfig>
+```
+
+刷新缓存
+
+```bash
+sudo fc-cache -f -v
+```
+
+验证
+
+```bash
+fc-match sans
+fc-match serif
+fc-match monospace
+```
+
+应该看到类似
+
+```bash
+NotoSans-Regular.ttf: "Noto Sans" "Regular"
+NotoSerif-Regular.ttf: "Noto Serif" "Regular"
+NotoSansMono-Regular.ttf: "Noto Sans Mono" "Regular"
 ```

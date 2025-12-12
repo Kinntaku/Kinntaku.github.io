@@ -1,0 +1,222 @@
+---
+title: 使用容器进行嵌入式开发
+description: 使用 Podman/Docker 和 Distrobox 进行嵌入式开发
+date: 2025-05-21
+tags: ['Arch','Distrobox','Podman','Docker','嵌入式']
+authors: ['kinntaku']
+image: './banner.png'
+---
+
+# 配置 Distrobox 和 Podman环境
+
+安装相关软件
+
+```bash
+sudo pacman -S xorg-xhost lazydocker podman distrobox
+```
+
+设置环境变量
+
+编辑
+
+```bash
+vim ~/.zshrc
+```
+
+添加
+
+```bash
+PATH=$PATH:$HOME/.local/podman/bin:$HOME/.local/bin
+xhost +si:localuser:$USER
+export DOCKER_HOST=unix:///run/user/1000/podman/podman.sock
+alias docker='podman'
+```
+启用相关服务和配置
+
+```bash
+sudo nvidia-ctk cdi generate --output=/etc/cdi/nvidia.yaml
+sudo nvidia-ctk runtime config  ure --runtime=docker
+sudo systemctl restart docker
+systemctl --user enable --now podman.socket
+```
+
+创建用于嵌入式开发的 debian 容器
+
+```bash
+distrobox create --name debian13 --image docker.io/library/debian:trixie-slim --home /home/kinntaku/Documents/distrobox/debian13_home 
+# 可选择自己喜欢的名字
+# 注意指定 home 目录，避免和其他容器冲突
+```
+
+插入你的烧录器, 这里以 ST-Link V2 为例
+
+应用烧录器规则
+
+从 [openocd 仓库的 contrb 文件夹](https://sourceforge.net/p/openocd/code/ci/master/tree/contrib/)下载 `xx-openocd.rules` 文件
+
+将其复制到 `/etc/udev/rules.d` 目录下
+
+应用新规则
+
+```bash
+sudo udevadm control --reload-rules
+sudo udevadm trigger
+```
+
+# 测试烧录器
+
+进入容器 
+
+```bash
+distrobox enter debian13
+```
+
+软件安装
+
+```bash
+sudo apt install build-essential curl wget make cmake binutils-arm-none-eabi gcc-arm-none-eabi libstdc++-arm-none-eabi-newlib gdb-multiarch openocd usbutils 
+```
+|名称|用处|
+|---|---|
+|build-essential curl wget make cmake|构建工具|
+|binutils-arm-none-eabi gcc-arm-none-eabi libstdc++-arm-none-eabi-newlib gdb-multiarch|Arm 开发工具包|
+|openocd|烧录工具|
+
+查看是否能识别烧录器
+
+```bash
+lsusb
+```
+
+查找有无类似
+
+```bash
+Bus 003 Device 005: ID 0483:3748 STMicroelectronics STM32 STLink
+```
+
+使用 openocd 连接烧录器
+
+```bash
+openocd -f interface/stlink.cfg -f target/stm32f1x.cfg
+```
+
+输出类似
+
+```bash
+Open On-Chip Debugger 0.12.0
+Licensed under GNU GPL v2
+For bug reports, read
+        http://openocd.org/doc/doxygen/bugs.html
+Info : auto-selecting first available session transport "hla_swd". To override use 'transport select <transport>'.
+Info : The selected transport took over low-level target control. The results might differ compared to plain JTAG/SWD
+Info : Listening on port 6666 for tcl connections
+Info : Listening on port 4444 for telnet connections
+Info : clock speed 1000 kHz
+Info : STLINK V2J37S7 (API v2) VID:PID 0483:3748
+Info : Target voltage: 3.292948
+Info : [stm32f1x.cpu] Cortex-M3 r1p1 processor detected
+Info : [stm32f1x.cpu] target has 6 breakpoints, 4 watchpoints
+Info : starting gdb server for stm32f1x.cpu on 3333
+Info : Listening on port 3333 for gdb connections
+```
+
+此时烧录器指示灯闪烁，表示连接成功
+
+# CubeMX 生成代码
+
+使用 STM32CubeMX 生成代码, 项目类型选择 `Cmake`, `SYS` 中 `Debug` 选择 `Serial Wire`
+
+# 配置 VSCode 进行开发
+
+vscode 安装插件 `Remote Development`
+
+修改 vscode 设置
+
+```JSON
+"dev.containers.dockerPath": "podman",
+```
+
+使用 vscode 连接容器
+
+`Ctrl+Shift+P` - `Dev Containers: Attach to Running Container...` - 选择 `debian13`
+
+vscode server 安装插件 `Hex Editor`, `C/C++ Extension Pack`, `CMake Tools`, `Cortex-Debug`
+
+编辑 vscode 项目配置 
+`Ctrl+Shift+P` - `C/C++: Edit Configurations (JSON)`
+
+编辑 `.vscode/c_cpp_properties.json`
+
+```json
+{
+   "configurations": [
+      {
+         "name": "STM32",
+         "includePath": [
+               "${workspaceFolder}/**"
+         ],
+         "defines": [
+               "STM32F103xE",
+               "USE_HAL_DRIVER"
+         ],
+         "compilerPath": "/usr/bin/arm-none-eabi-gcc",
+         "cStandard": "c11",
+         "cppStandard": "c++17",
+         "intelliSenseMode": "gcc-arm"
+      }
+   ],
+   "version": 4
+}
+```
+
+注意 `STM32F103xE` 来自项目工程使用芯片的名称
+
+在项目根目录创建烧录脚本 `flash.cfg`
+
+```cfg
+source [find interface/stlink.cfg]
+transport select hla_swd
+source [find target/stm32f1x.cfg]
+adapter speed 10000
+```    
+
+修改 `CMakeLists.txt` 
+
+添加以下内容
+
+```cmaake
+add_custom_target(flash
+    COMMAND openocd -f ${CMAKE_SOURCE_DIR}/flash.cfg
+            -c "program ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.elf verify reset exit"
+)
+```
+
+构建
+
+`Ctrl+Shift+P` - `CMake: Build`
+
+烧录
+
+```
+cmake --build build/Debug --target flash
+```
+
+# PyOCD 使用教程
+
+安装
+
+```bash
+python3 python3-pip python3-venv
+pip3 install pyocd --break-system-packages
+```
+查看芯片列表
+
+```bash
+pyocd list --targets
+```
+
+烧录
+
+```bash
+pyocd flash build/Debug/xxx.elf -t stm32f103rc
+```
