@@ -9,11 +9,25 @@ image: './banner.png'
 
 [toc]
 
-# 设备信息：
+# 安装目标
+
+- 操作系统: ArchLinux
+
+- 文件系统: Btrfs
+
+- 引导程序: GRUB
+
+- 桌面环境: KDE Plasma (Wayland)
+
+- 登录管理器: greetd + Tuigreet / SDDM
+
+# 设备信息
 
 - 华硕天选5Pro (FA607PV)
 
 - CPU: AMD Ryzen 9 7940HX
+
+- 内存: 16 GiB 内存
 
 - GPU1: AMD Radeon 610M
 
@@ -29,11 +43,11 @@ image: './banner.png'
 
    - [Arch Linux 中国镜像站下载地址](https://mirrors.ustc.edu.cn/archlinux/iso/latest/)
 
-2. ventoy
+2. (推荐) ventoy
 
    - [ventoy 官方下载地址](https://www.ventoy.net/en/download.html)
 
-3. Flclash build 包
+3. (推荐) Flclash build 包
 
    - [Flclash AUR 包](https://aur.archlinux.org/packages/flclash-bin)
 
@@ -41,7 +55,7 @@ image: './banner.png'
       
       下载 `Source` 中的 全部文件
 
-4. 万象拼音
+4. (推荐) 万象拼音
 
    - [万象拼音 Releases](https://github.com/amzxyz/rime_wanxiang/releases)
 
@@ -55,27 +69,41 @@ image: './banner.png'
 
       下载最新的 `tone_moe.dict.yaml`
 
+6. 部分软件安装包
+
+   - (推荐) [XnViewMP](https://www.xnview.com/en/xnview-mp/): 一款免费的专业图片浏览和管理工具
+
+   - [Visual Studio Code](https://code.visualstudio.com/Download)
+
+   - (可选) [Mujoco](https://github.com/google-deepmind/mujoco/releases): 机器人仿真平台
+
+   - (可选) [STM32CubeMX](https://www.st.com/en/development-tools/stm32cubemx.html): 意法半导体单片机配置工具
+
 5. 需要的 AppImage
 
-   - [Motrix](https://motrix.app/download): 一款下载器
+   - (推荐) [Motrix](https://motrix.app/download): 一款下载器
    
-   - [QQ 音乐](https://y.qq.com/download/download.html)
+   - (可选) [QQ 音乐](https://y.qq.com/download/download.html)
 
-   - [PureRef](https://www.pureref.com/download.php): 一款绘画参考图查看工具
+   - (可选) [PureRef](https://www.pureref.com/download.php): 一款绘画参考图查看工具
 
       Linux 下载中选择 `Portable` 然后 `Select amount` 中选择第三个 `Custom Amount` 输入 `0` 即可下载免费版
 
-   - [QtScrcpy](https://github.com/barry-ran/QtScrcpy/releases): 一款安卓投屏工具
+   - (可选) [QtScrcpy](https://github.com/barry-ran/QtScrcpy/releases): 一款安卓投屏工具
+
+   - [微信](https://linux.weixin.qq.com/)
+
+   PS: 腾讯 QQ 也提供了 AppImage 版本, 但是由于打包问题, 无法使用 AppImageLauncher 安装, 建议直接使用 AUR 包
 
 6. 字体文件
 
-   - [Nerd Fonts](https://www.nerdfonts.com/font-downloads)
+   - (可选) [Nerd Fonts](https://www.nerdfonts.com/font-downloads): 用于终端美化显示系统图标等
 
       这里选择 `0xProto Nerd Font`
 
-   - [Jetbrains Mono](https://www.jetbrains.com/lp/mono/)
+   - (可选) [Jetbrains Mono](https://www.jetbrains.com/lp/mono/): 好看的编程字体
    
-   - Windows 字体
+   - (可选) Windows 字体: 防止wps和qq音乐缺少字体
 
       从 Windows 系统中拷贝 `C:\Windows\Fonts` 文件夹下的字体文件到一个单独的文件夹中备用
 
@@ -324,7 +352,7 @@ pacstrap -K /mnt base base-devel linux-cachyos linux-cachyos-headers linux-firmw
 |gvim|(可更换) 命令行文本编辑器, gvim 相比 vim 多了剪贴板集成|nano 或 vim 或 micro|
 |sudo|权限工具||
 |zsh zsh-completions|(可更换)终端工具|bash bash-completion|
-|grub efibootmgr os-prober|(可更换) 引导工具,本教程使用grub, 也可以使用 systemd-boot 或 limine||
+|grub efibootmgr os-prober|引导工具,本教程使用 grub, 也可以使用 rEFInd, systemd-boot 或 limine||
 |openssh|(可选) sshd 客户端, 方便退出 Live CD 后远程安装系统||
 
 ## chroot 后
@@ -452,7 +480,7 @@ nmcli dev wifi connect "SSID" password "password"
 
 ### [修改 Arch 仓库镜像站](#修改-Arch-仓库镜像站)
 
-### [添加cachyos软件源](#添加cachyos软件源)
+### (可选) [添加cachyos软件源](#添加cachyos软件源)
 
 ### 启用 32 位仓库
 
@@ -583,7 +611,7 @@ reboot
 
 # 第二次进入系统（rootless）
 
-## 安装字体
+## (可选) 安装字体
 
 Plasma 设置 - 文字和字体 - 字体管理 - 安装字体 - 系统字体
 
@@ -604,7 +632,7 @@ sudo paru -U flclash-bin-xxx.tar.zst
 
 ```bash
 sudo pacman -S podman xorg-xhost lazydocker distrobox nvidia-container-toolkit picocom cmake jdk21-openjdk obs-studio chromium virt-manager pandoc vlc ffmpeg vlc-plugin-ffmpeg steam blender gimp krita kdenlive localsend
-sudo paru -S appimagelauncher wps-office-cn wps-office-mui-zh-cn wemeet-bin linuxqq wechat-bin
+sudo paru -S appimagelauncher wps-office-cn wps-office-mui-zh-cn wemeet-bin linuxqq
 
 ```
 |软件包名称|说明|可选替代|
@@ -623,7 +651,11 @@ sudo paru -S appimagelauncher wps-office-cn wps-office-mui-zh-cn wemeet-bin linu
 |localsend|(可选) 局域网文件传输工具|
 |appimagelauncher|(可选) AppImage安装器|
 |wps-office-cn wps-office-mui-zh-cn|(可选) wps相关|
-|wemeet-bin linuxqq wechat-bin|(可选) 通讯工具|
+|wemeet-bin linuxqq|(可选) 通讯工具|
+
+### 使用 AppImageLauncher 安装 AppImage
+
+### 安装需要手动安装的软件
 
 ### (可选) 安装 micromamba
 ```bash
@@ -650,7 +682,7 @@ sudo firewall-cmd --zone=public -add-port=53317/udp --permanent # (可选) 这�
 sudo firewall-cmd --reload
 ```
 
-## 美化 vim
+## (可选) 美化 vim
 
 编辑
 
@@ -666,7 +698,7 @@ colorscheme evening
 syntax on
 ```
 
-## 修改关机超时
+## (可选) 修改关机超时
 
 编辑
 
@@ -680,7 +712,7 @@ sudo vim /etc/systemd/system.conf
 DefaultTimeoutStopSec=10s
 ```
 
-## 阻止usb外设唤醒电脑
+## (可选) 阻止usb外设唤醒电脑
 
 创建系统服务
 
@@ -779,7 +811,7 @@ Notebook Dynamic Boost:     Supported
 ```
 ## 软件设置
 
-### 设置 fcitx 万象拼音
+### (可选) 设置 fcitx 万象拼音
 
 
 Plasma设置 - 键盘 - 虚拟键盘 - Fcitx 5 Wayland启动器 (实验性)
@@ -968,7 +1000,7 @@ style = "bg:#1d2230"
 format = '[[  $time ](fg:#a0a9cb bg:#1d2230)]($style)'
 ```
 
-###  (可选) minegrub
+### (可选) minegrub
 
 编辑 `./minegrub-world-selection/theme.txt`
 所有 top 属性都加上 45
@@ -1000,7 +1032,7 @@ GRUB_THEME=/boot/grub/themes/minegrub-world-selection/theme.txt
 sudo grub-mkconfig -o /boot/grub/grub.cfg
 ```
 
-### vscode
+### (可选) vscode
 
 安装插件 
 
@@ -1295,18 +1327,36 @@ cat ~/.ssh/id_ed25519.pub
 ssh -T git@github.com
 ```
 
+### (可选) XnviewMP
+
+设置 - 标签卡 - 仅打开一个文件时隐藏标签: on; 退出 XnView 时, 关闭最后一个选项卡: on, 查看器标签卡上限: 1
+
+设置 - 鼠标 - 鼠标左键 - 无修饰键: 移动图片
+
+设置 - 鼠标 - 滚轮 - 无修饰键: 向上/向下滚动
+
+设置 - 鼠标 - 鼠标右键 - 无修饰键: 创建选区
+
 # 一些奇怪的问题
 
 ## 部分傻逼软件的快捷方式修复
 
 - qq: 添加启动参数
+   
    ```bash
    -enable-features=UseOzonePlatform -ozone-platform=wayland --enable-wayland-ime --wayland-text-input-version=3
    ```
 
 - wechat: 添加环境变量
+   
    ```bash
    QT_IM_MODULE=fcitx XMODIFIERS=@im=fcitx GTK_IM_MODULE=fcitx
+   ```
+
+- qq 音乐: 添加启动参数
+   
+   ```bash
+   --no-sandbox
    ```
 
 ## 安装字体导致字体 fallback 链出问题
