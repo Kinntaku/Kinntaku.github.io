@@ -1,67 +1,72 @@
-# limine 引导
+---
+title: Limine 引导安装教程
+description: Limine 引导安装教程
+date: 2026-1-11
+tags: ['limine']
+authors: ['kinntaku']
+image: './banner.png'
+---
 
-- 安装软件
-    
-    limine limine-mkinitcpio-hook limine-snapper-sync inotify-tools
+# 安装软件
 
-    注: `limine-mkinitcpio-hook` 和 `limine-snapper-sync` 只在 cachyos 软件源中存在，使用 arch 软件源请通过 yay 或 paru 安装
+limine limine-mkinitcpio-hook limine-snapper-sync inotify-tools
 
-- 启动 Limine
+注: `limine-mkinitcpio-hook` 和 `limine-snapper-sync` 只在 cachyos 软件源中存在，使用 arch 软件源请通过 yay 或 paru 安装
 
-    复制启动镜像
-    
-    ```bash
-    cp /usr/share/limine/BOOTX64.EFI /boot/EFI/arch-limine/
-    ```
+# 启动 Limine
 
-    添加启动项
+复制启动镜像
 
-    ```bash
-    efibootmgr --create --disk /dev/nvme0n1 --part 2 --label "Limine" --loader '\EFI\limine\BOOTX64.EFI' --unicode
-    ```
+```bash
+cp /usr/share/limine/BOOTX64.EFI /boot/EFI/arch-limine/
+```
 
-    注意: 其中 `/dev/nvme0n1` 是你想装的efi分区所在磁盘, 不是分区, 后面的 `--part` 用来指定分区 
+添加启动项
 
-    创建 /etc/default/limine 添加
+```bash
+efibootmgr --create --disk /dev/nvme0n1 --part 2 --label "Limine" --loader '\EFI\limine\BOOTX64.EFI' --unicode
+```
 
-    ```bash
-    KERNEL_CMDLINE[default]+=" loglevel=5 nowatchdog modprobe.blacklist=sp5100_tco"
-    ```
+注意: 其中 `/dev/nvme0n1` 是你想装的efi分区所在磁盘, 不是分区, 后面的 `--part` 用来指定分区 
 
-    注: Intel 用户请把 `modprobe.blacklist=sp5100_tco` 替换为 `modprobe.blacklist=iTCO_wdt`
+创建 /etc/default/limine 添加
 
-- 常见指令
+```bash
+KERNEL_CMDLINE[default]+=" loglevel=5 nowatchdog modprobe.blacklist=sp5100_tco"
+```
 
-    ```bash
-    # 更新配置
-    sudo limine-update
+注: Intel 用户请把 `modprobe.blacklist=sp5100_tco` 替换为 `modprobe.blacklist=iTCO_wdt`
 
-    # 更新快照
-    sudo limine-snapper-sync
-    ```
+# 常见指令
 
-- 创建 windows boot managaer 启动项
+```bash
+# 更新配置
+sudo limine-update
 
-    
+# 更新快照
+sudo limine-snapper-sync
+```
 
-    ```bash
-    lsblk -f
-    # 找到 windows efi 分区地址, 例如 nvme0n1p1 vfat    FAT32   91A1-B9BE
+# 创建 windows boot manager 启动项
 
-    lsblk -dno PARTUUID /dev/nvme0n1p1
-    #查看分区 PARTUUID, 例如: 82fa57db-407b-4d1c-9ac8-eda647673859
-    ```
+```bash
+lsblk -f
+# 找到 windows efi 分区地址, 例如 nvme0n1p1 vfat    FAT32   91A1-B9BE
 
-    如nvme0n1p1   vfat  FAT32  91A1-B9BE
+lsblk -dno PARTUUID /dev/nvme0n1p1
+#查看分区 PARTUUID, 例如: 82fa57db-407b-4d1c-9ac8-eda647673859
+```
 
-    编辑 `/boot/limine.conf` 添加
+如nvme0n1p1   vfat  FAT32  91A1-B9BE
 
-    ```bash
-    /Windows 11
-        # no-overwrite
-        comment: Windows 11 Boot Manager
-        protocol: efi_chainload
-        # 替换为你刚才查到的 UUID
-        path: uuid(82fa57db-407b-4d1c-9ac8-eda647673859):/EFI/Microsoft/Boot/bootmgfw.efi
-    ```
+编辑 `/boot/limine.conf` 添加
+
+```bash
+/Windows 11
+# no-overwrite
+comment: Windows 11 Boot Manager
+protocol: efi_chainload
+# 替换为你刚才查到的 UUID
+path: uuid(82fa57db-407b-4d1c-9ac8-eda647673859):/EFI/Microsoft/Boot/bootmgfw.efi
+```
 
