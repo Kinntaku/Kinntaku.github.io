@@ -1,0 +1,386 @@
+# 软件配置
+
+- 驱动
+
+    - 电源配置项
+    
+        power-profiles-daemon vulkan-icd-loader lib32-vulkan-icd-loader
+
+    - AMD
+
+        mesa lib32-mesa vulkan-radeon lib32-vulkan-radeon vulkan-mesa-layers libva-mesa-driver lib32-libva-mesa-driver
+        
+    - NVIDIA
+
+        nvidia-open-dkms nvidia-settings lib32-nvidia-utils nvidia-utils libva-nvidia-driver
+
+    - 硬件加速
+
+        libva libva-utils
+
+- 音频
+    
+    sof-firmware alsa-firmware alsa-ucm-conf
+
+- 华硕
+    
+    asusctl rog-control-center
+
+- Btrfs
+    
+    snapper btrfs-assistant 
+
+- Arch相关
+    
+    paru fastfetch starship htop nvtop
+
+- 字体
+    
+    wqy-zenhei noto-fonts noto-fonts-cjk noto-fonts-emoji noto-fonts-extra ttc-jetbrains-mono ttf-jetbrains-mono-nerd
+    
+    aur: ttf-ms-win10-auto-zh_cn
+
+- 登录管理器
+    
+    greetd greetd-tuigreet
+
+- 桌面环境
+    
+    hyprland hyprpolkitagent xdg-desktop-portal-gtk 
+    xdg-desktop-portal-hyprland xorg-xwayland 
+    
+    aur: dms-shell-bin
+
+- 输入法
+    
+    fcitx5-im fcitx5-chinese-addons fcitx5-rime
+
+- 配套软件
+    
+    kitty bluez firewalld vlc ffmpeg vlc-plugin-ffmpeg featherpad file-roller thunar thunar-volman thunar-archive-plugin
+
+- 主题美化
+    
+    qt6ct qt5ct nwg-look adw-gtk-theme adwaita-icon-theme adwaita-qt5  adwaita-qt6 
+
+- 剪贴板
+    
+    wlclipboard wl-clip-persist cliphist
+
+- 截图
+    
+    hyprshot swappy
+
+- 自用生产力软件
+    
+    xournalapp kdenlive obs-studio blender gimp kirta zen-browser
+    
+    aur: wps-office-cn wps-office-mui-zh-cn xnviewmp visual-studio-code-bin
+
+- docker
+    
+    xorg-xhost lazydocker distrobox nvidia-container-toolkit
+
+- 虚拟机
+    
+    virt-manager qemu-full
+
+- 开发
+    
+    picocom cmake jdk21-openjdk
+
+- 娱乐
+    
+    steam
+
+- 社交工作软件
+    
+    aur: wechat wemeet-bin linuxqq qqmusic-bin
+
+    注: wemeet-bin 的共享屏幕在 hyprland 下仍不可用, kde 下可正常运行, hyprland 下可使用 flatpak 版本, 或者曲线救国使用 obs 虚拟摄像头
+
+- 让你的生活更美好的软件
+    
+    localsend
+
+    aur: pureref qtscrcpy-bin motrix meshlab
+
+- (可选) 提前准备安装包的自用软件
+
+    Mujoco HMCL
+
+
+# 登录管理器配置
+
+- 编辑 /etc/greetd/config.toml
+
+    修改
+
+    ```bash
+    command = "tuigreet --asterisks --time -r --cmd strat-hyprland"
+    ...
+    user = "kinntaku"
+    ```
+
+# 启动必要服务
+
+```bash
+sudo systemctl enable --now NetworkManager
+sudo systemctl enable --now sshd
+sudo systemctl enable greetd.service
+sudo systemctl enable --now bluetooth
+systemctl --user enable --now hyprpolkitagent.service
+```
+
+# 设置 XDG
+
+创建 `~/.config/xdg-desktop-portal/hyprland-portals.conf` 写入
+
+```ini
+[preferred]
+default=hyprland;gtk
+org.freedesktop.impl.portal.FileChooser=gtk
+```
+
+修复 QQ 打开文件被挂起
+
+选择一个位置创建 `xdg-open`
+
+```bash
+#!/bin/zsh
+#gio open "$@"
+/bin/xdg-open "$@" &
+```
+
+执行
+
+```bash
+sudo install -m 0755 ~/mybin/xdg-open /usr/local/bin/xdg-open
+
+# 测试是否成功
+command -v xdg-open
+```
+
+# 配置 Kitty
+
+编辑 `~/.config/kitty/kitty.conf` 写入
+
+```bash
+font_family      JetBrains Mono
+font_size        10.0
+bold_font        auto
+italic_font      auto
+confirm_os_window_close 0
+```
+
+设置字体
+
+关闭进程结束确认对话框
+
+# 配置 thunar
+
+打开 `编辑` - `配置自定义动作` - `Open Terminal Here`
+
+将指令修改为
+
+```bash
+kitty -e zsh
+```
+
+# 配置 Navi
+
+关闭第一级分类 (最左侧的一列)
+
+创建 `~/.config/navi/config.yaml` 写入
+
+```yaml
+style:
+  tag:
+    width_percentage: 0
+    min_width: 0
+```
+
+编辑 `~/.zshrc` 添加
+
+```bash
+# navi
+# 设置 navi 的命令不自动执行
+alias nv='print -z $(navi --print)'
+# 你想要的snippet默认存储位置
+export NAVI_PATH="$HOME/DOTFILES/navi"
+```
+
+目标文件夹创建 `xxx.cheats` 文件
+
+其中格式
+
+```bash
+# refresh zshrc
+source ~/.zshrc
+
+# edit zshrc
+nano ~./zshrc
+```
+
+# Hyprland 配置
+
+修改显示器缩放
+
+```ini
+monitor=,preferred,auto,1.60
+```
+
+设置默认应用
+
+```ini
+$terminal = kitty
+$fileManager = thunar
+$menu = hyprlauncher
+```
+
+关闭不需要的动画
+
+```ini
+animations {
+    enabled = yes
+
+    # 保持贝塞尔曲线定义
+    bezier = quick, 0.15, 0, 0.1, 1
+
+    # 窗口动画
+    animation = windows,    1, 2.5, quick
+    animation = windowsIn,  1, 2.5, quick
+    animation = windowsOut, 1, 2.5, quick
+
+    # 禁用渐入渐出
+    animation = fadeIn,       0, 1, default
+    animation = fadeOut,      0, 1, default
+    animation = fade,         0, 1, default
+    animation = fadeLayersIn, 0, 1, default
+    animation = fadeLayersOut,0, 1, default
+
+    # 关键：禁用 layers 动画（弹窗/全屏）
+    animation = layersIn,     0, 1, default
+    animation = layersOut,    0, 1, default
+
+    # 工作区切换（可保留 slide 或禁用）
+    animation = workspaces,    1, 2.0, quick
+    animation = workspacesIn,  1, 2.0, quick
+    animation = workspacesOut, 1, 2.0, quick
+
+    # 其他
+    animation = border,     1, 1, quick
+    animation = zoomFactor, 1, 2, quick
+}
+```
+
+调整输入设备
+
+```ini
+input {
+
+    # 开启小键盘锁定
+	numlock_by_default = 1
+    
+    # 更像 windows 的鼠标逻辑
+    follow_mouse = 2
+    float_switch_override_focus = 0
+    
+    touchpad {
+        # 开启触摸板的自然滚动
+        natural_scroll = true
+    }
+}
+```
+
+更符合人类习惯的键位绑定
+
+```ini
+bind = $mainMod, T, exec, $terminal
+bind = ALT, F4, killactive,
+# 注释这个防止误触关闭 hyprland
+# bind = $mainMod, M, exec, command -v hyprshutdown >/dev/null 2>&1 && hyprshutdown || hyprctl dispatch exit
+bind = $mainMod, E, exec, $fileManager
+bind = $mainMod, F, togglefloating,
+bind = $mainMod, up, fullscreen,
+```
+
+配置自启动
+
+```ini
+exec-once = dms run
+exec-once = fcitx5
+exec-once = flclash
+exec-once = rog-control-center
+exec-once = wl-paste --watch cliphist store
+exec-once = systemctl --user start hyprpolkitagent
+```
+
+设置中文
+
+```ini
+env = LANG, zh_CN.UTF-8
+```
+键位绑定
+
+```ini
+$mod = SUPER
+# dank material shell 的 工具快捷键
+bind = ALT, W, exec, dms ipc call spotlight toggle
+bind = $mod, V, exec, dms ipc call clipboard toggle
+bind = $mod, A, exec, dms ipc call notifications toggle
+bind = $mod, TAB, exec, dms ipc call hypr toggleOverview
+bind = $mod, L, exec, dms ipc call lock lock
+bind = $mod, X, exec, dms ipc call powermenu toggle
+bind = $mod, I, exec, dms ipc call control-center toggle
+
+# 截图
+bind = ALT, Q, exec, hyprshot -m region -z --raw | swappy -f -
+
+# 快速启动任务管理器 htop
+bind = CONTROL SHIFT, Escape, exec, kitty htop
+
+# alt + tab 切换窗口
+bind = ALT, TAB, cyclenext
+
+# dank material shell 的 ipc 快捷键
+bindel = , XF86MonBrightnessUp, exec, dms ipc call brightness increment 5 ""
+bindel = , XF86MonBrightnessDown, exec, dms ipc call brightness decrement 5 ""
+```
+
+窗口规则
+
+```ini
+# 浮动窗口规则
+windowrule = float on, size 800 500, center on, match:class ^(thunar)$
+windowrule = float on, size 800 500, center on, match:class ^(clashh)$
+windowrule = float on, size 800 500, center on, match:class ^(clash)$
+windowrule = float on, size 800 500, opacity 0.9 override, center on, match:class ^(kitty)$ # 同时设置透明度
+windowrule = float on, size 800 500, center on, match:class ^(top)$
+windowrule = float on, size 800 500, center on, match:class ^(exo-desktop-item-edit)$
+windowrule = float on, size 800 500, center on, match:class ^(org.gnome.FileRoller)$
+
+# 常用 Python 浮动窗口
+windowrule = float on, size 800 500, center on, match:title (?i).*MuJoCo.*
+windowrule = float on, size 800 500, center on, match:title (?i).*figure.*
+windowrule = float on, size 800 500, center on, match:title (?i).*OpenCV.*
+windowrule = float on, size 800 500, center on, match:class ^(python3)$
+
+# 社交软件窗口规则
+# 越往下优先级越大，发现只有主窗口的 title 和 class 都是 QQ 或者微信，子窗口的 title 会变化，利用这个完成主窗口不浮动子窗口浮动
+windowrule = float on, size 800 500, center on, match:class ^(QQ)$
+windowrule = tile on, match:class ^(QQ)$, match:title ^(QQ)$
+windowrule = float on, size 800 500, center on, match:class ^(微信)$
+windowrule = tile on, match:class ^(QQ)$, match:title ^(微信)$
+
+# vscode美化
+windowrule = opacity 0.9 override, match:class ^(code)$
+
+# 关闭 xwayland 缩放防止模糊
+xwayland{
+	force_zero_scaling=true
+}
+
+# 设置 QT 主题
+env = QT_QPA_PLATFORMTHEME,qt6ct   # for Qt apps
+```

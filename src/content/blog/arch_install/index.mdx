@@ -135,7 +135,7 @@ exit
 
 ### 更新时钟
 
-```
+```bash
 timedatectl set-ntp true
 timedatectl status
 ```
@@ -179,6 +179,8 @@ CachyOS 是一个基于 Arch Linux 的发行版, 专注于为用户提供更好�
    sudo pacman-key --lsign-key F3B607488DB35A47
    ```
 
+   注: 密钥可能会更新, 请进入 [CachyOS 官方文档](https://wiki.cachyos.org/features/optimized_repos/) - `Adding Our Repositories to an Existing Arch Linux Install` - `Manual` 选项 - `Install CachyOS keyring:` 查看最新指令
+
    安装 CachyOS 相关包
    
    ```bash
@@ -188,6 +190,8 @@ CachyOS 是一个基于 Arch Linux 的发行版, 专注于为用户提供更好�
    'https://mirror.cachyos.org/repo/x86_64/cachyos/cachyos-v4-mirrorlist-22-1-any.pkg.tar.zst' \
    'https://mirror.cachyos.org/repo/x86_64/cachyos/pacman-7.0.0.r7.g1f38429-2-x86_64.pkg.tar.zst'
    ```
+
+   注: 包可能会更新, 请进入 [CachyOS 官方文档](https://wiki.cachyos.org/features/optimized_repos/) - `Adding Our Repositories to an Existing Arch Linux Install` - `Manual` 选项 - `Install the necessary packages:` 查看最新指令
 
 2. 启用仓库
 
@@ -359,7 +363,7 @@ pacstrap -K /mnt base base-devel linux-cachyos linux-cachyos-headers linux-firmw
 
 进入 chroot
 
-```
+```bash
 arch-chroot /mnt 
 ```
 
