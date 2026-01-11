@@ -672,6 +672,22 @@ systemctl enable nvidia-suspend.service nvidia-hibernate.service nvidia-resume.s
 systemctl enable --now nvidia-powerd
 ```
 
+## 实现独显运行软件
+
+编辑
+
+```bash
+vim ~/.zshrc
+```
+
+添加
+
+```bash
+alias prime-run='__NV_PRIME_RENDER_OFFLOAD=1 __VK_LAYER_NV_optimus=NVIDIA_only __GLX_VENDOR_LIBRARY_NAME=nvidia '
+```
+
+此时使用 `prime-run` 前缀即可实现独显运行软件
+
 ## 修改防火墙设置
 
 ```bash
@@ -739,6 +755,20 @@ WantedBy=multi-user.target
 ```bash
 sudo systemctl enable --now disable-xhc-wakeup.service
 cat /proc/acpi/wakeup | grep XHC # 检查外设是否变为disabled
+```
+
+## (可选) 禁用密码尝试次数耗尽锁定时间
+
+编辑
+
+```bash
+sudo vim /etc/security/faillock.conf
+```
+
+修改
+
+```bash
+deny = 0
 ```
 
 ## fcitx 设置
@@ -898,6 +928,8 @@ Plasma设置 - 文字和字体 - 字体管理 - 安装字体文件
 Plasma设置 - 电源管理 - 空闲时：无操作，按下电源键时：显示注销屏幕
 
 Plasma设置 - 锁屏 - 自动锁定屏幕：不自动锁屏
+
+Plasma设置 - 会话 - 桌面会话 - 登录时自动启动应用程序: 启动为空会话
 
 ### (可选) starship 终端美化
 
@@ -1119,6 +1151,58 @@ systemctl --user enable --now podman.socket
    ```bash
    sudo apt install libqt5gui5 -y
    ```
+
+   容器内使用独显运行软
+   
+   将宿主机的 ``~/.zshrc`` 中的 prime-run 配置复制到容器内的 `~/.zshrc` 中  
+
+   ```bash
+   alias prime-run='__NV_PRIME_RENDER_OFFLOAD=1 __VK_LAYER_NV_optimus=NVIDIA_only __GLX_VENDOR_LIBRARY_NAME=nvidia '
+   ```
+
+   容器内使用 micromamba
+
+   将宿主机的 ``~/.zshrc`` 中的 micromamba 初始化代码复制到容器内的 `~/.zshrc` 中  
+
+   ```bash
+   # >>> mamba initialize >>>
+   # !! Contents within this block are managed by 'micromamba shell init' !!
+   export MAMBA_EXE='/home/kinntaku/.local/bin/micromamba';
+   export MAMBA_ROOT_PREFIX='/home/kinntaku/micromamba';
+   __mamba_setup="$("$MAMBA_EXE" shell hook --shell zsh --root-prefix "$MAMBA_ROOT_PREFIX" 2> /dev/null)"
+   if [ $? -eq 0 ]; then
+      eval "$__mamba_setup"
+   else
+      alias micromamba="$MAMBA_EXE"  # Fallback on help from micromamba activate
+   fi
+   unset __mamba_setup
+   # <<< mamba initialize <<<
+
+   alias conda='micromamba'
+   ```
+
+   安装软件
+
+   ```bash
+   sudo apt install git vim 
+   ```
+
+   容器内调用 vulkan
+
+   安装软件
+
+   ```bash
+   sudo apt install mesa-utils vulkan-tools libglu1-mesa libxt6 libxmu6 libx11-6 libxrender1 libxrandr2 libxi6 libxcursor1 libxinerama1 libxxf86vm1
+   ```
+
+   测试 vulkan
+
+   ```bash
+   prime-run glxinfo | grep OpenGL
+   ```
+
+   应该显示包含 Nvidia 的内容
+   
 配置 VSCode 进行开发
 
 vscode 安装插件 
@@ -1130,6 +1214,13 @@ vscode 安装插件
 ```JSON
 "dev.containers.dockerPath": "podman",
 ```
+
+**注意: 每次更新 nvidia 驱动后都需要重新执行以下命令确保容器的动态链接库版本正常**
+
+```bash
+sudo nvidia-ctk cdi generate --output=/etc/cdi/nvidia.yaml
+```
+
 
 ### (可选) mujoco 设置
 
