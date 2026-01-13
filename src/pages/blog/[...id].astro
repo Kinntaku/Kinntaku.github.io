@@ -292,10 +292,44 @@ const tocSections = await getTOCSections(currentPostId)
         }
       }
 
-      // 页面加载完成后加载 Giscus
-      document.addEventListener('DOMContentLoaded', () => {
-        loadGiscus()
-      })
+      // 主动监听主题设置并加载 Giscus（最可靠的方案）
+      let giscusLoaded = false
+
+      function tryLoadGiscus() {
+        if (
+          !giscusLoaded &&
+          document.documentElement.hasAttribute('data-theme')
+        ) {
+          giscusLoaded = true
+          loadGiscus()
+          return true
+        }
+        return false
+      }
+
+      // 立即尝试加载（如果主题已设置）
+      if (!tryLoadGiscus()) {
+        // 如果主题还没设置，开始监听
+        const themeObserver = new MutationObserver(() => {
+          if (tryLoadGiscus()) {
+            themeObserver.disconnect() // 加载后停止监听
+          }
+        })
+
+        themeObserver.observe(document.documentElement, {
+          attributes: true,
+          attributeFilter: ['data-theme'],
+        })
+
+        // 备用方案：页面完全加载后尝试
+        window.addEventListener('load', () => {
+          setTimeout(() => {
+            if (!giscusLoaded) {
+              tryLoadGiscus()
+            }
+          }, 200)
+        })
+      }
 
       // 监听主题变化（带防抖优化）
       let themeChangeTimeout

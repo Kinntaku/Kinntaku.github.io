@@ -27,9 +27,12 @@ image: './banner.png'
 
         libva libva-utils
 
+    - 编解码器
+
 - 音频
     
-    sof-firmware alsa-firmware alsa-ucm-conf
+    pipewire-pulse sof-firmware alsa-firmware alsa-ucm-conf
+    
 
 - 华硕
     
@@ -55,8 +58,7 @@ image: './banner.png'
 
 - 桌面环境
     
-    hyprland hyprpolkitagent xdg-desktop-portal-gtk 
-    xdg-desktop-portal-hyprland xorg-xwayland 
+    hyprland hyprpolkitagent xdg-desktop-portal-gtk xdg-desktop-portal-hyprland xorg-xwayland 
     
     aur: dms-shell-bin
 
@@ -82,9 +84,9 @@ image: './banner.png'
 
 - 自用生产力软件
     
-    xournalapp kdenlive obs-studio blender gimp kirta zen-browser
+    xournalapp kdenlive obs-studio blender kirta zen-browser code
     
-    aur: wps-office-cn wps-office-mui-zh-cn xnviewmp visual-studio-code-bin
+    aur: wps-office-cn wps-office-mui-zh-cn xnviewmp
 
 - docker
     
@@ -102,6 +104,8 @@ image: './banner.png'
     
     steam
 
+    自备安装包: HMCL
+
 - 社交工作软件
     
     aur: wechat wemeet-bin linuxqq qqmusic-bin
@@ -113,10 +117,6 @@ image: './banner.png'
     localsend
 
     aur: pureref qtscrcpy-bin motrix meshlab
-
-- (可选) 提前准备安装包的自用软件
-
-    Mujoco HMCL
 
 
 # 登录管理器配置
