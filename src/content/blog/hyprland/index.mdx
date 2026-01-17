@@ -104,9 +104,7 @@ image: './banner.png'
 
 - 娱乐
     
-    steam
-
-    自备安装包: HMCL
+    steam prism-launcher zerotier-one
 
 - 社交工作软件
     
@@ -413,7 +411,8 @@ bind = ALT, Tab, alterzorder, top, current # 实现切换切换的窗口置顶
 
 ```ini
 # 浮动窗口规则
-windowrule = float on, size 800 500, center on, match:class ^(thunar)$
+windowrule = float on, size 800 500, center on, match:title (?i).*thunar.*
+windowrule = float on, size 800 500, center on, match:title (?i).*rename.*
 windowrule = float on, size 800 500, center on, match:class ^(clashh)$
 windowrule = float on, size 800 500, center on, match:class ^(clash)$
 windowrule = float on, size 800 500, opacity 0.9 override, center on, match:class ^(kitty)$ # 同时设置透明度
@@ -1205,6 +1204,20 @@ nano ~./zshrc
 
 
 ## Minecraft
+
+### prism-laucnehr
+
+添加 java 启动参数
+
+```bash
+-Dforgewrapper.skipHashCheck=true
+```
+
+勾选 使用系统 openal
+
+勾选 使用独显运行
+
+### HMCL
 
 创建 hmcl 的快捷方式
 
