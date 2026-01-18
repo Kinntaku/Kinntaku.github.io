@@ -13,15 +13,15 @@ image: './banner.png'
 
     - 电源配置项
     
-        power-profiles-daemon vulkan-icd-loader lib32-vulkan-icd-loader
+        power-profiles-daemon vulkan-icd-loader
 
     - AMD
 
-        mesa lib32-mesa vulkan-radeon lib32-vulkan-radeon vulkan-mesa-layers libva-mesa-driver lib32-libva-mesa-driver
+        vulkan-radeon vulkan-mesa-layers libva libva-utils
         
     - NVIDIA
 
-        nvidia-open-dkms nvidia-settings lib32-nvidia-utils nvidia-utils libva-nvidia-driver
+        nvidia-open-dkms lib32-nvidia-utils nvidia-utils nvidia-settings libva-nvidia-driver
 
     - 硬件加速
 
@@ -29,7 +29,7 @@ image: './banner.png'
 
 - 音频
     
-    sof-firmware alsa-firmware alsa-ucm-conf
+    pipewire-pulse sof-firmware alsa-firmware alsa-ucm-conf
     
 
 - 华硕
@@ -42,11 +42,13 @@ image: './banner.png'
 
 - Arch相关
     
-    paru fastfetch starship htop nvtop socat
+    paru fastfetch starship htop nvtop socat fuse2 lib3mf
+
+    注: fuse2 用于 appimage 运行, lib3mf 为 meshlab 的依赖
 
 - 字体
     
-    wqy-zenhei noto-fonts noto-fonts-cjk noto-fonts-emoji noto-fonts-extra ttc-jetbrains-mono ttf-jetbrains-mono-nerd
+    noto-fonts noto-fonts-cjk noto-fonts-emoji noto-fonts-extra ttf-jetbrains-mono ttf-jetbrains-mono-nerd
     
     aur: ttf-ms-win10-auto-zh_cn
 
@@ -74,7 +76,7 @@ image: './banner.png'
 
 - 剪贴板
     
-    wlclipboard wl-clip-persist cliphist
+    wl-clipboard wl-clip-persist cliphist
 
 - 截图
     
@@ -82,7 +84,7 @@ image: './banner.png'
 
 - 自用生产力软件
     
-    xournalapp kdenlive obs-studio blender kirta code chromium 
+    xournalpp kdenlive obs-studio blender krita code chromium 
     
     aur: wps-office-cn wps-office-mui-zh-cn xnviewmp flclash
 
@@ -137,8 +139,7 @@ export EDITOR='vim'
 添加账户
 
 ```bash
-useradd -m -G wheel,uccp -s /bin/zsh kinntaku # 选择你喜欢的用户名
-# 笔者需要嵌入式开发, 添加了 uccp 组, 普通用户可以不添加
+useradd -m -G wheel-s /bin/zsh kinntaku # 选择你喜欢的用户名
 passwd kinntaku
 ```
 编辑用户权限
@@ -160,7 +161,7 @@ EDITOR=vim visudo
 修改
 
 ```bash
-command = "tuigreet --asterisks --time -r --cmd strat-hyprland"
+command = "tuigreet --asterisks --time -r --cmd start-hyprland"
 ...
 user = "kinntaku"
 ```
@@ -253,7 +254,9 @@ confirm_os_window_close 0
 环境变量
 
 ```ini
-env = LANG, zh_CN.UTF-8 # 设置中文
+env = LANG,zh_CN.UTF-8
+env = LC_MESSAGES,zh_CN.UTF-8
+env = LC_CTYPE,zh_CN.UTF-8 # 设置中文
 env = QT_QPA_PLATFORMTHEME,qt6ct   # 设置 QT 主题
 ```
 
@@ -858,9 +861,11 @@ Fcitx5 配置 - 输入法 - 配置全局选项 - 切换输入法: Super+空格, 
 调整设置
 
 ```ini
-spelling_hints: 0 # 取消拼音显示
 
-tips_key: "Control+q" # 设置快速输入提示键为 Ctrl + Q
+...
+
+- name: ascii_mode
+    states: [ 中文 ] # 删掉无用输入状态
 
 ...
 
@@ -873,6 +878,14 @@ tips_key: "Control+q" # 设置快速输入提示键为 Ctrl + Q
 - name: emoji                         
     states: [表情关, 表情开]
     reset: 1 # 默认开启表情
+
+...
+
+spelling_hints: 0 # 取消拼音显示
+
+tips_key: "Control+q" # 设置快速输入提示键为 Ctrl + Q
+
+
 ```
 
 右键任务栏 Fcitx 图标 - 选择中州韵 - 右键地球图标项 - 选择重新部署
@@ -1267,6 +1280,14 @@ QT_IM_MODULE=fcitx XMODIFIERS=@im=fcitx GTK_IM_MODULE=fcitx
 
 ```bash
 --no-sandbox
+```
+
+## meshlab
+
+修改启动项, 前面添加
+
+```bash
+QT_QPA_PLATFORM=xcb
 ```
 
 ## chromium 设置

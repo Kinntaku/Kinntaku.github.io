@@ -193,6 +193,8 @@ CachyOS 是一个基于 Arch Linux 的发行版, 专注于为用户提供更好�
 
    注: 包可能会更新, 请进入 [CachyOS 官方文档](https://wiki.cachyos.org/features/optimized_repos/) - `Adding Our Repositories to an Existing Arch Linux Install` - `Manual` 选项 - `Install the necessary packages:` 查看最新指令
 
+   注: 如果官方文档也没来得及更新, 可以去 cahcyos 仓库, 比如 [中科大镜像站](https://mirrors.ustc.edu.cn/cachyos) 搜索出错的包, 查看具体版本, 修改安装指令
+
 2. 启用仓库
 
    **注意：请参考 [CachyOS Wiki](https://wiki.cachyos.org/features/optimized_repos/) 选择适合当前设备架构的仓库！错误的软件仓库可能导致系统不稳定或无法正常工作！**
@@ -359,6 +361,13 @@ pacstrap -K /mnt base base-devel linux-cachyos linux-cachyos-headers linux-firmw
 |grub efibootmgr os-prober|引导工具,本教程使用 grub, 也可以使用 rEFInd, systemd-boot 或 limine||
 |openssh|(可选) sshd 客户端, 方便退出 Live CD 后远程安装系统||
 
+### 分区表
+
+```bash
+genfstab -U /mnt > /mnt/etc/fstab
+cat /mnt/etc/fstab # 确认分区表
+```
+
 ## chroot 后
 
 进入 chroot
@@ -367,12 +376,7 @@ pacstrap -K /mnt base base-devel linux-cachyos linux-cachyos-headers linux-firmw
 arch-chroot /mnt 
 ```
 
-### 分区表
 
-```bash
-genfstab -U /mnt > /mnt/etc/fstab
-cat /mnt/etc/fstab # 确认分区表
-```
 ### 自定义设置
 
 #### 设置主机名

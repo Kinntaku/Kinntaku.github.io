@@ -7,6 +7,8 @@ authors: ['kinntaku']
 image: './banner.png'
 ---
 
+# **注意: 如果在 chroot 下一定要拔掉 U 盘!**
+
 # 安装软件
 
 limine limine-mkinitcpio-hook limine-snapper-sync inotify-tools
@@ -15,25 +17,41 @@ limine limine-mkinitcpio-hook limine-snapper-sync inotify-tools
 
 # 启动 Limine
 
-复制启动镜像
+查看启动项
 
 ```bash
-cp /usr/share/limine/BOOTX64.EFI /boot/EFI/arch-limine/
+efibootmgr
 ```
 
-添加启动项
+观察启动项列表中是否有 `limine` 字样
+
+---
+
+如果没有 `limine` 字样的启动项:
+
+    复制启动镜像
+
+    ```bash
+    cp /usr/share/limine/BOOTX64.EFI /boot/EFI/arch-limine/
+    ```
+
+    添加启动项
+
+    ```bash
+    efibootmgr --create --disk /dev/nvme0n1 --part 2 --label "Limine" --loader '\EFI\limine\BOOTX64.EFI' --unicode
+    ```
+
+    注意: 其中 `/dev/nvme0n1` 是你想装的efi分区所在磁盘, 不是分区, 后面的 `--part` 用来指定分区 
+
+---
+
+修改 `/etc/limine-entry-tool.conf` 添加
 
 ```bash
-efibootmgr --create --disk /dev/nvme0n1 --part 2 --label "Limine" --loader '\EFI\limine\BOOTX64.EFI' --unicode
+KERNEL_CMDLINE[default]="root=UUID=5af74557-3688-4f4d-b495-117936cb4a0f rootflags=subvol=/@ rw loglevel=5 nowatchdog modprobe.blacklist=sp5100_tco"
 ```
 
-注意: 其中 `/dev/nvme0n1` 是你想装的efi分区所在磁盘, 不是分区, 后面的 `--part` 用来指定分区 
-
-创建 /etc/default/limine 添加
-
-```bash
-KERNEL_CMDLINE[default]+=" loglevel=5 nowatchdog modprobe.blacklist=sp5100_tco"
-```
+将 uuid 改为你的 uuid
 
 注: Intel 用户请把 `modprobe.blacklist=sp5100_tco` 替换为 `modprobe.blacklist=iTCO_wdt`
 
