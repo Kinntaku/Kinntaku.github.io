@@ -86,11 +86,13 @@ image: './banner.png'
     
     xournalpp kdenlive obs-studio blender krita code chromium 
     
-    aur: wps-office-cn wps-office-mui-zh-cn xnviewmp flclash
+    aur: wps-office-cn wps-office-mui-zh-cn xnviewmp flclash code-marketplace code-features
 
     自备安装包: STM32CubeMX
 
     注: 由于加密媒体设定, chromium 无法登录推特, 需要登录推特可换用 google-chrome (AUR)
+
+    注: arch 和 cachyos 官方源中的 code 是 oss 版本, 所使用的插件源和功能和 visual studio code 有所不同, 可通过安装 `code-marketplace` 开启官方插件仓库和 `code-features` 启用 Github Copilot. 或者如果你不那么魔怔的话可以直接安装 aur 中的 `visual-studio-code-bin`, 这个是微软官方版本的 vscode
 
 - docker
     
@@ -118,7 +120,9 @@ image: './banner.png'
     
     localsend
 
-    aur: pureref qtscrcpy-bin motrix meshlab
+    aur: pureref qtscrcpy-bin motrix-bin meshlab
+
+    注: aur 上的 meshalab 是需要自行编译的
 
 # 准备工作
 
@@ -187,6 +191,8 @@ systemctl --user enable --now pipewire pipewire-pulse wireplumber
 
 ## 安装 nvidia-laptop-power-cfg 
 
+以下操作不能使用 root 账户进行
+
 ```bash
 git clone https://gitlab.com/asus-linux/nvidia-laptop-power-cfg.git 
 cd nvidia-laptop-power-cfg 
@@ -221,7 +227,7 @@ org.freedesktop.impl.portal.FileChooser=gtk
 执行
 
 ```bash
-sudo install -m 0755 ~/mybin/xdg-open /usr/local/bin/xdg-open
+sudo install -m 0755 ./xdg-open /usr/local/bin/xdg-open
 
 # 测试是否成功
 command -v xdg-open
@@ -294,6 +300,13 @@ general{
     resize_on_border = false # 允许直接使用鼠标在窗口边缘调整窗口大小
 
     # 添加内容    
+
+}
+
+
+# hyorand 的壁纸貌似是强制显示的, 最好的禁用方法是直接删除掉 /usr/share/hypr/ 目录下所有图像文件
+# 以下方法有概率起作用
+misc{
     disable_hyprland_logo = true # 禁用内置的背景图
     force_default_wallpaper = 0 # 禁用内置壁纸，后面会使用 dms 接管
 }
@@ -516,7 +529,19 @@ chmod +x minimal.sh
 ```ini
 exec-once = minimal.sh
 ```
+## 设置 zsh
 
+关闭 zsh 历史记录
+
+编辑 `~/.zshrc` 添加
+
+```bash
+HISTSIZE=1000
+SAVEHIST=0
+HISTFILESIZE=0
+```
+
+删除配历史记录文件 `~/.histfile`
 
 ## Nvidia GPU
 
@@ -1202,7 +1227,7 @@ alias nv='print -z $(navi --print)'
 export NAVI_PATH="$HOME/DOTFILES/navi"
 ```
 
-目标文件夹创建 `xxx.cheats` 文件
+目标文件夹创建 `xxx.cheat` 文件
 
 其中格式
 
@@ -1332,7 +1357,8 @@ pip install labelme
 ```bash
 #!/bin/bash
 export QT_QPA_PLATFORM=xcb
-micromamba run -n labelme labelme
+micromamba run -n labelme labelme &
+disown
 ```
 
 ## pdfmathtranslate-next

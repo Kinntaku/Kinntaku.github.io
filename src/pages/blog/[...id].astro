@@ -228,64 +228,7 @@ const tocSections = await getTOCSections(currentPostId)
     </article>
 
     <!-- Giscus 评论系统 -->
-    <div class="col-start-2 mt-8">
-      <script
-        src="https://giscus.app/client.js"
-        data-repo="Kinntaku/Kinntaku.github.io"
-        data-repo-id="R_kgDOQmv6pw"
-        data-category="Announcements"
-        data-category-id="DIC_kwDOQmv6p84CzsLp"
-        data-mapping="pathname"
-        data-strict="0"
-        data-reactions-enabled="1"
-        data-emit-metadata="0"
-        data-input-position="bottom"
-        data-theme="preferred_color_scheme"
-        data-lang="zh-CN"
-        crossorigin="anonymous"
-        async></script>
-    </div>
-
-    <script is:inline>
-      // Giscus 主题同步脚本
-      function updateGiscusTheme() {
-        const theme =
-          document.documentElement.getAttribute('data-theme') || 'light'
-        const giscusTheme = theme === 'dark' ? 'dark' : 'light'
-
-        // 更新 Giscus iframe 的主题
-        const iframe = document.querySelector('iframe.giscus-frame')
-        if (iframe) {
-          iframe.contentWindow.postMessage(
-            {
-              giscus: {
-                setConfig: {
-                  theme: giscusTheme,
-                },
-              },
-            },
-            'https://giscus.app',
-          )
-        }
-      }
-
-      // 监听主题变化
-      const observer = new MutationObserver((mutations) => {
-        mutations.forEach((mutation) => {
-          if (
-            mutation.type === 'attributes' &&
-            mutation.attributeName === 'data-theme'
-          ) {
-            updateGiscusTheme()
-          }
-        })
-      })
-
-      observer.observe(document.documentElement, {
-        attributes: true,
-        attributeFilter: ['data-theme'],
-      })
-    </script>
+    <div class="col-start-2 mt-8" id="giscus-container"></div>
 
     {
       (hasChildPosts || isCurrentSubpost) && (
@@ -320,7 +263,53 @@ const tocSections = await getTOCSections(currentPostId)
   </Button>
 
   <script>
+    function loadGiscus() {
+      const container = document.getElementById('giscus-container')
+      if (!container) return
+
+      const theme =
+        document.documentElement.getAttribute('data-theme') || 'light'
+      const giscusTheme = theme === 'dark' ? 'dark' : 'light'
+
+      container.innerHTML = ''
+      const script = document.createElement('script')
+      script.src = 'https://giscus.app/client.js'
+      script.setAttribute('data-repo', 'Kinntaku/Kinntaku.github.io')
+      script.setAttribute('data-repo-id', 'R_kgDOQmv6pw')
+      script.setAttribute('data-category', 'Announcements')
+      script.setAttribute('data-category-id', 'DIC_kwDOQmv6p84CzsLp')
+      script.setAttribute('data-mapping', 'pathname')
+      script.setAttribute('data-strict', '0')
+      script.setAttribute('data-reactions-enabled', '1')
+      script.setAttribute('data-emit-metadata', '0')
+      script.setAttribute('data-input-position', 'bottom')
+      script.setAttribute('data-theme', giscusTheme)
+      script.setAttribute('data-lang', 'zh-CN')
+      script.setAttribute('crossorigin', 'anonymous')
+      script.async = true
+
+      container.appendChild(script)
+    }
+
+    function updateGiscusTheme() {
+      const theme =
+        document.documentElement.getAttribute('data-theme') || 'light'
+      const giscusTheme = theme === 'dark' ? 'dark' : 'light'
+
+      const iframe = document.querySelector(
+        'iframe.giscus-frame',
+      ) as HTMLIFrameElement
+      if (iframe) {
+        iframe.contentWindow?.postMessage(
+          { giscus: { setConfig: { theme: giscusTheme } } },
+          'https://giscus.app',
+        )
+      }
+    }
+
     document.addEventListener('astro:page-load', () => {
+      loadGiscus()
+
       const scrollToTopButton = document.getElementById('scroll-to-top')
       const footer = document.querySelector('footer')
 
@@ -339,6 +328,22 @@ const tocSections = await getTOCSections(currentPostId)
           )
         })
       }
+    })
+
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (
+          mutation.type === 'attributes' &&
+          mutation.attributeName === 'data-theme'
+        ) {
+          updateGiscusTheme()
+        }
+      })
+    })
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['data-theme'],
     })
   </script>
 </Layout>
