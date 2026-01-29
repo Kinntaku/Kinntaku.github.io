@@ -42,9 +42,9 @@ image: './banner.png'
 
 - Arch相关
     
-    paru fastfetch starship htop nvtop socat fuse2 lib3mf
+    paru fastfetch starship htop nvtop socat fuse2 lib3mf wev
 
-    注: fuse2 用于 appimage 运行, lib3mf 为 meshlab 的依赖
+    注: fuse2 用于 appimage 运行, lib3mf 为 meshlab 的依赖, wev 用于寻找笔记本上不知道叫什么名字的按键编号
 
 - 字体
     
@@ -58,7 +58,7 @@ image: './banner.png'
 
 - 桌面环境
     
-    hyprland hyprpolkitagent xdg-desktop-portal-gtk xdg-desktop-portal-hyprland xorg-xwayland 
+    hyprland hyprpolkitagent xdg-desktop-portal-gtk xdg-desktop-portal-hyprland xorg-xwayland cava
     
     aur: dms-shell-bin
 
@@ -80,17 +80,17 @@ image: './banner.png'
 
 - 截图
     
-    hyprshot swappy
+    grim satty
+
+    注: grim + satty 可实现冻结截图 + 截取右键菜单, 不支持中文标注, 且由于 satty 是 gtk4 应用, 冷启动耗时, 截图总耗时约5s, grim + slurp + swappy 可实现中文标注 + 截取右键菜单, 不支持冻结截图, 且 swappy 无法调整窗口大小, hyprshot + swappy 可实现冻结截图 + 中文标注, 不支持截取右键菜单, 且hyprshot 有一定延迟, 或者可以选择 xwayland 后台运行的截图软件, 这类软件具备快速相响应的特点, 如 snipaste 和 flameshot, 但 snipaste 在 hyprland 下无法使用快捷键, falmeshot 对分数缩放不友好且有较高延迟
 
 - 自用生产力软件
     
     xournalpp kdenlive obs-studio blender krita code chromium 
     
-    aur: wps-office-cn wps-office-mui-zh-cn xnviewmp flclash code-marketplace code-features
-
-    自备安装包: STM32CubeMX
-
-    注: 由于加密媒体设定, chromium 无法登录推特, 需要登录推特可换用 google-chrome (AUR)
+    aur: wps-office-cn wps-office-mui-zh-cn xnviewmp flclash code-marketplace code-features lceda-pro stm32cubemx
+o
+    注: 由于加密媒体设定, chromium 有概率无法登录推特, 但多试几天也能登上去, 需稳定登录推特可换用 google-chrome (AUR)
 
     注: arch 和 cachyos 官方源中的 code 是 oss 版本, 所使用的插件源和功能和 visual studio code 有所不同, 可通过安装 `code-marketplace` 开启官方插件仓库和 `code-features` 启用 Github Copilot. 或者如果你不那么魔怔的话可以直接安装 aur 中的 `visual-studio-code-bin`, 这个是微软官方版本的 vscode
 
@@ -112,7 +112,7 @@ image: './banner.png'
 
 - 社交工作软件
     
-    aur: wechat wemeet-bin linuxqq qqmusic-bin
+    aur: wechat-bin wemeet-bin linuxqq qqmusic-bin
 
     注: wemeet-bin 的共享屏幕在 hyprland 下仍不可用, kde 下可正常运行, hyprland 下可使用 flatpak 版本, 或者曲线救国使用 obs 虚拟摄像头
 
@@ -122,7 +122,7 @@ image: './banner.png'
 
     aur: pureref qtscrcpy-bin motrix-bin meshlab
 
-    注: aur 上的 meshalab 是需要自行编译的
+    注: aur 上的 meshlab 是需要自行编译的, 如果觉得浪费时间可以使用 appimage 版
 
 # 准备工作
 
@@ -184,8 +184,8 @@ sudo systemctl enable --now NetworkManager
 sudo systemctl enable --now sshd
 sudo systemctl enable greetd.service
 sudo systemctl enable --now bluetooth
+sudo systemctl enable --now power-profiles-daemon.service
 systemctl --user enable --now hyprpolkitagent.service
-systemctl enable --now power-profiles-daemon.service
 systemctl --user enable --now pipewire pipewire-pulse wireplumber
 ```
 
@@ -197,7 +197,6 @@ systemctl --user enable --now pipewire pipewire-pulse wireplumber
 git clone https://gitlab.com/asus-linux/nvidia-laptop-power-cfg.git 
 cd nvidia-laptop-power-cfg 
 makepkg -sfi
-systemctl enable nvidia-suspend.service nvidia-hibernate.service nvidia-resume.service
 systemctl enable --now nvidia-powerd
 ```
 
@@ -302,15 +301,31 @@ general{
     # 添加内容    
 
 }
+```
 
+关闭默认二次元壁纸
 
-# hyorand 的壁纸貌似是强制显示的, 最好的禁用方法是直接删除掉 /usr/share/hypr/ 目录下所有图像文件
-# 以下方法有概率起作用
+hyprland 的壁纸貌似是强制显示的, 目前来看除了强制删除没有别的办法
+
+方法1: 来自官方文档, 但是没有效果
+
+```ini
 misc{
     disable_hyprland_logo = true # 禁用内置的背景图
     force_default_wallpaper = 0 # 禁用内置壁纸，后面会使用 dms 接管
 }
 ```
+
+方法2: 目前有效办法
+
+```bash
+# 删除壁纸文件
+sudo rm -rf /usr/share/hypr/wall*
+
+# 强制锁定壁纸文件夹, 防止更新又回来
+sudo chattr +i /usr/share/hypr/
+```
+
 
 装饰
 
@@ -404,6 +419,7 @@ bind = $mainMod, mouse_up, workspace, e+1
 
 # 添加内容
 
+bindl = , XF86Launch3, exec, rog-control-center
 bind = ALT, W, exec, dms ipc call spotlight toggle # 快速启动
 bind = $mainMod, V, exec, dms ipc call clipboard toggle # 剪贴板
 bind = $mainMod, A, exec, dms ipc call notifications toggle # 通知中心
@@ -415,26 +431,32 @@ bind = $mainMod, I, exec, dms ipc call control-center toggle # dms 控制中心
 bind = , XF86MonBrightnessUp, exec, dms ipc call brightness increment 5 "" # 亮度调整, 注意后面需要加引号指定设备, 引号内留空默认指代所有设备
 bind = , XF86MonBrightnessDown, exec, dms ipc call brightness decrement 5 ""
 
-bind = ALT, Q, exec, hyprshot -m region -z --raw | swappy -f - # 冻结屏幕并截图
-
 bind = CONTROL SHIFT, Escape, exec, kitty htop # 任务管理器
 
+# 窗口切换
 bind = ALT, TAB, cyclenext # 切换窗口
 bind = ALT, Tab, alterzorder, top, current # 实现切换切换的窗口置顶
+
+# 截图
+bind = ALT, Q, exec, grim - | satty --filename - 
+bind = , Print, exec, grim -t ppm - | magick - png:- | wl-copy
+
 ```
 
 窗口规则
 
 ```ini
 # 浮动窗口规则
-windowrule = float on, size 800 500, center on, match:title (?i).*thunar.*
+windowrule = float on, size 800 500, center on, match:class (?i).*thunar.*
 windowrule = float on, size 800 500, center on, match:title (?i).*rename.*
-windowrule = float on, size 800 500, center on, match:class ^(clashh)$
-windowrule = float on, size 800 500, center on, match:class ^(clash)$
+windowrule = float on, size 800 500, center on, match:class (?i).*clash.*
+windowrule = float on, size 1000 500, center on, match:class (?i).*rog-control-center.*
 windowrule = float on, size 800 500, opacity 0.9 override, center on, match:class ^(kitty)$ # 同时设置透明度
 windowrule = float on, size 800 500, center on, match:class ^(top)$
 windowrule = float on, size 800 500, center on, match:class ^(exo-desktop-item-edit)$
 windowrule = float on, size 800 500, center on, match:class ^(org.gnome.FileRoller)$
+windowrule = float on, size 800 500, center on, match:class ^(xdg-desktop-portal-gtk)$
+
 
 # 常用 Python 浮动窗口
 windowrule = float on, size 800 500, center on, match:title (?i).*MuJoCo.*
@@ -469,7 +491,7 @@ xwayland{
 安装软件
 
 ```bash
-sudo pacman -S socat
+sudo pacman -S socat jq
 ```
 
 创建脚本写入
