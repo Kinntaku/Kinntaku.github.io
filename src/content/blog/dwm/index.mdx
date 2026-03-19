@@ -1,0 +1,586 @@
+# 软件相关
+
+1. 建议必装
+
+- X11 相关: xorg-xset xorg-xhost xorg-xinit xorg-xev xclip xss-lock      
+
+- 功能性软件: lxqt-policykit-agent dunst copyq rog-control-center-x11(aur) i3lock-color(cachyos/aur)
+
+- 美化: rofi qt5ct qt6ct picom nwg-look feh
+
+- 设备控制: pipewire-pulse pavucontrol blueman nm-applet brightnessctl
+
+
+2. 自选软件
+
+kitty thunar thunar-volman tumbler navi snipaste 
+
+# 锁屏相关
+
+dwm 一般使用 i3lock 这里使用 i3lock-color, 为 i3lock 的增强版
+
+创建锁屏脚本 `lock.sh`, 放到合适位置
+
+```bash
+#!/bin/sh
+
+BLANK='#00000000'
+CLEAR='#00000000'
+DEFAULT='#ffffffff'
+TEXT='#ffffffff'
+WRONG='#fc5500ff'
+VERIFYING='#0089B6ff'
+BACKGROUND='#000000ff'
+
+i3lock \
+--color=$BACKGROUND          \
+--insidever-color=$CLEAR     \
+--ringver-color=$VERIFYING   \
+\
+--insidewrong-color=$CLEAR   \
+--ringwrong-color=$WRONG     \
+\
+--inside-color=$BLANK        \
+--ring-color=$DEFAULT        \
+--line-color=$BLANK          \
+--separator-color=$DEFAULT   \
+\
+--verif-color=$TEXT          \
+--wrong-color=$TEXT          \
+--time-color=$TEXT           \
+--date-color=$TEXT           \
+--layout-color=$TEXT         \
+--keyhl-color=$VERIFYING         \
+--bshl-color=$WRONG          \
+--modifoutline-color=$TEXT  \
+\
+--screen 1                   \
+--clock                      \
+--indicator                  \
+--time-str="%H:%M:%S"        \
+--date-str="%A, %Y-%m-%d"       \
+--keylayout 1                \
+\
+--time-size=100 \
+--date-size=24 \
+\
+--radius 40                 \
+--ring-width 10             \
+--ind-pos="x+w/2:y+h/2+300" \
+--time-pos="w/2:h/2-30"     \
+--date-pos="w/2:h/2+30"     \
+--verif-pos="w/2:h/2"       \
+--wrong-pos="w/2:h/2"       \
+--modif-pos="w/2:h-30"      \
+```
+
+参考 `https://github.com/Raymo111/i3lock-color/blob/master/examples/lock.sh`
+
+# picom
+
+picom 是一个第三方混成器, 可以给 dwm 提供窗口阴影, 半透明, 以及动画
+
+创建 `$HOME/.config/picom/picom.conf`
+
+```bash
+vsync = true; # 垂直同步
+backend = "glx"; # 指定渲染后端
+
+shadow = true;
+opacity-rule = [
+
+    "95:class_g = 'Code'",             # VS Code 80% 透明
+    "90:class_g = 'kitty'",             # VS Code 80% 透明
+
+
+];
+```
+
+# dwm
+
+dwm 的设计理念为 suckless, 所有的自定义配置都需要修改头文件重新编译, 但是其具有极高的可拓展性, 可以通过应用 patch 进行扩展, 但是由于传统的手动应用 patch 需要解决过于复杂的合并工作, 以及需要遵守相当严格的合并顺序, 所以这里使用一个第三方的 dwm 改版: dwm-flexipatch, 这个版本将大部分常用补丁全部打入, 通过宏定义控制补丁的开启, 未开启的补丁在编译的时候会直接忽略以节省性能
+
+## 克隆仓库
+
+```bash
+git clone https://github.com/bakkeby/dwm-flexipatch.git
+```
+
+克隆完成后请立即执行 `make`
+
+此时会生成两个文件:
+
+- config.h
+
+- patches.h
+
+这两个文件为对应 `.def.h` 模板文件的副本, 用于用户自定义修改配置, 以防干扰默认配置, 如果需要使用 git 管理自定义修改需要将这两个文件从 `.gitignore` 中移除
+
+执行 `sudo make install` 安装
+
+## 启动 dwm
+
+这里以 greetd 为例
+
+在 `$HOME` 中添加一个 `.xsession` 文件, 里面编写启动脚本
+
+```bash
+#设置qt主题
+export QT_QPA_PLATFORMTHEME=qt6ct
+
+#设置语言
+export LANG=zh_CN.UTF-8 
+export LC_ALL=zh_CN.UTF-8
+
+# 合并 Xresources 配置, 见后文
+xrdb -merge ~/.Xresources
+
+# 设置壁纸
+feh --bg-fill ".../wallpaper.png" &
+
+# 禁用自动休眠/黑屏
+xset -dpms && xset s off && xset s noblank
+
+# 自动锁屏服务（注意：这里必须加 & 后台运行）
+xss-lock --transfer-sleep-lock -- .../lock.sh -n &
+
+# dwm 的 bar, 见后文
+.../dwm_bar.sh &
+
+picom -b & # 合成器, 见后文
+dunst & # 通知管理器
+fcitx5 & # 输入法
+nm-applet & # 网络托盘
+blueman-applet & # 蓝牙托盘
+flclash & # 飞机
+copyq & # 剪贴板
+Snipaste & # 截图软件
+lxqt-policykit-agent & # 应用授权后端
+rog-control-center & # 华硕面板
+
+exec dwm
+```
+
+## `.Xresources` 文件
+
+其中包含了 xserver 的部分设置
+
+```bash
+Xft.dpi: 144 # 设置分数缩放 dpi
+Xcursor.size: 32 # 设置鼠标指针大小
+```
+
+## `patches` 选择
+
+编辑库中的 `patches.h` 文件中的宏定义, 标记为 1 开启 patch
+
+- `BAR_AWESOMEBAR_PATCH`: 类似 `awesomewm` 的任务栏, 显示当前虚拟桌面的所有窗口标题, 点击即可隐藏标签
+
+- `BAR_STATUS_PATCH`: 允许在状态栏中使用颜色和特殊格式
+
+- `BAR_STATUS2D_PATCH`: 许在状态栏中使用十六进制真彩色
+
+- `BAR_SYSTRAY_PATCH`: 启用系统托盘
+
+- `BAR_TAGS_PATCH`: 虚拟桌面指示器
+
+- `BAR_WINTITLE_PATCH`: 显示窗口标题, 是 `BAR_AWESOMEBAR_PATCH` 的依赖
+
+- `ALWAYSCENTER_PATCH`: 允许设置浮动窗口出现的位置
+
+- `CFACTS_PATCH`: 允许调整单独平铺窗口大小
+
+- `DRAGCFACT_PATCH`: 允许通过按键拖拽调整平铺窗口高度
+
+- `DRAGMFACT_PATCH`: 允许通过按键拖拽调整平铺窗口宽度
+
+- `FLOATPOS_PATCH`: 允许设置浮动窗口创建时位置以及大小
+
+- `FOCUSONCLICK_PATCH`: 关闭鼠标哪窗口焦点就到哪
+
+- `SELFRESTART_PATCH`: 允许热重载
+
+- `SHIFTVIEW_CLIENTS_PATCH`: 可以前后切换虚拟桌面并且切换时候自动跳过空白虚拟桌面, 这里用于切换窗口
+
+- `FOCUSADJACENTTAG_PATCH`: 前后切换虚拟桌面但是不跳过空白虚拟桌面, 这里用于移动窗口到其他虚拟桌面
+
+- `VANITYGAPS_PATCH`: 设置窗口间隔
+
+- `XRDB_PATCH`: 允许读取 `.Xresources` 文件的颜色配置
+
+- `TILE_LAYOUT`: 默认的布局模式, 还有很多模式可以参考
+
+- `FULLSCREEN_PATCH` 允许设置全屏
+
+
+## 修改外观
+
+修改 `config.h`
+
+- 关闭标签指示器数字左上角的窗口指示器 (小方块)
+
+```c
+...
+static int tagindicatortype              = INDICATOR_NONE;
+static int floatindicatortype            = INDICATOR_NONE;
+...
+```
+
+- 调整字体和样式
+
+```c
+...
+#if BAR_PANGO_PATCH
+static const char font[]                 = "monospace 10";
+#else
+static const char *fonts[]               = { "JetBrains Mono:style=Bold:size=10" };
+#endif // BAR_PANGO_PATCH
+static const char dmenufont[]            = "JetBrains Mono:style=Bold:size=10";
+...
+```
+
+- 加粗窗口边框
+
+```c
+static const unsigned int borderpx       = 4;   /* border pixel of windows */
+```
+
+- 关闭吸附
+
+```c
+static const unsigned int snap           = 0;  /* 
+```
+
+- 调整非激活窗口边框颜色
+
+```c
+static char normfloatcolor[]             = "#444444";
+```
+
+- 调整窗口间隔
+
+```c
+static const unsigned int gappih         = 5;  /* horiz inner gap between windows */
+static const unsigned int gappiv         = 5;  /* vert inner gap between windows */
+static const unsigned int gappoh         = 5;  /* horiz outer gap between windows and screen edge */
+static const unsigned int gappov         = 5;  /* vert outer gap between windows and screen edge */
+```
+
+- 调整 master 区域默认比例
+
+```c
+static const float mfact     = 0.5; /* factor of master area size [0.05..0.95] */
+```
+
+## 窗口规则
+
+```c
+static const Rule rules[] = {
+
+    ...
+
+	RULE(.class = "copyq", .isfloating = 1, .floatpos = "50% 50% 800W 600H") // 设置窗口打开就浮动, 位置位于屏幕中心, 大小是 800*600
+	RULE(.class = "Thunar", .isfloating = 1, .floatpos = "50% 50% 1400W 800H")
+	RULE(.class = "kitty", .isfloating = 1, .floatpos = "50% 50% 1400W 800H")
+	RULE(.class = "rog-control-center", .isfloating = 1, .floatpos = "50% 50% 1400W 800H")
+
+    // 设置微信主窗口平铺, 其余窗口浮动, QQ 同理
+	RULE(.class = "wechat", .isfloating = 1)
+	RULE(.class = "wechat", .title = "Weixin", .isfloating = 0)
+
+	RULE(.class = "QQ", .isfloating = 1)
+	RULE(.class = "QQ", .title = "QQ", .isfloating = 0)
+
+    ...
+
+};
+```
+
+## 自定义任务
+
+```c
+static const char *roficmd[] = { "rofi", "-show", "drun", NULL };
+static const char *kittycmd[] = { "kitty", NULL };
+static const char *thunarcmd[] = { "thunar", NULL };
+static const char *powerscript[] = { "bash", "/home/kinntaku/user_dotfiles/bin/power.sh", NULL }; // 电源菜单行为
+static const char *lockcmd[] = { "bash", "/home/kinntaku/user_dotfiles/bin/lock.sh", NULL }; // 锁屏行为
+static const char *navicmd[] = { "kitty", "-e", "navi", "--path", "/home/kinntaku/user_dotfiles/navi", NULL }; // 自定义路径 navi
+static const char *powerprofilecmd[] = { "sh", "-c", "profile=$(powerprofilesctl get); case \"$profile\" in balanced) powerprofilesctl set power-saver ;; power-saver) powerprofilesctl set performance ;; performance) powerprofilesctl set balanced ;; esac", NULL }; // 电源模式调整
+```
+
+## 按键绑定
+
+
+如果使用 ipc 按键需要在 `dwm.c` 添加
+
+```c
+#include <X11/XKBlib.h>
+```
+
+更改 MODKEY 为 Windows 键, 修改 `config.h`
+
+```c
+#define MODKEY Mod4Mask
+```
+
+- 自定义快捷键
+
+```c
+static const Key keys[] = {
+    #if KEYMODES_PATCH
+    
+    ...
+    
+    #endif // KEYMODES_PATCH
+
+    ...
+
+
+    { MODKEY,                       XK_x,     spawn,                  {.v = powerscript } }, // 使用 rofi 实现电源菜单
+    { MODKEY,                       XK_grave,      spawn,                  {.v = roficmd } }, // 打开 rofi
+    { MODKEY,                       XK_t,          spawn,                  {.v = kittycmd } }, // 打开 kitty
+    { MODKEY,                       XK_e,          spawn,                  {.v = thunarcmd } }, // 打开 thuanr
+    { MODKEY,                       XK_l,          spawn,                  {.v = lockcmd } }, // 锁屏
+    { Mod1Mask,                     XK_space,      spawn,                  {.v = navicmd } }, // 打开 navi
+    { MODKEY,                       XK_v,          spawn,                  SHCMD("copyq show") }, // 呼出剪贴板
+    { 0,                            XF86XK_Launch3, spawn,                 SHCMD("rog-control-center") }, // 华硕面板
+    { 0,                            XF86XK_Launch4, spawn,                 {.v = powerprofilecmd } }, // 电源模式调整
+    
+    // 音量调整
+    { 0,                            XF86XK_AudioRaiseVolume, spawn,        SHCMD("pactl set-sink-volume @DEFAULT_SINK@ +5%") },
+    { 0,                            XF86XK_AudioLowerVolume, spawn,        SHCMD("pactl set-sink-volume @DEFAULT_SINK@ -5%") },
+    { 0,                            XF86XK_AudioMute,        spawn,        SHCMD("pactl set-sink-mute @DEFAULT_SINK@ toggle") },
+    { 0,                            XF86XK_AudioMicMute,     spawn,        SHCMD("pactl set-source-mute @DEFAULT_SOURCE@ toggle") },
+    
+    // 亮度调整
+    { 0,                            XF86XK_MonBrightnessUp,  spawn,        SHCMD("brightnessctl set 5%+") },
+    { 0,                            XF86XK_MonBrightnessDown,spawn,        SHCMD("brightnessctl set 5%-") },
+    
+    // 媒体调整
+    { 0,                            XF86XK_AudioPlay,        spawn,        SHCMD("playerctl play-pause") },
+    { 0,                            XF86XK_AudioNext,        spawn,        SHCMD("playerctl next") },
+    { 0,                            XF86XK_AudioPrev,        spawn,        SHCMD("playerctl previous") },
+    { 0,                            XF86XK_AudioStop,        spawn,        SHCMD("playerctl stop") },
+    
+    ...
+
+}
+```
+
+- 窗口调整
+
+切换左右虚拟桌面
+
+```c
+{ MODKEY              XK_a,        shiftviewclients,       { .i = -1 } },
+{ MODKEY,              XK_d,  shiftviewclients,       { .i = +1 } },
+```
+
+切换窗口
+
+```c
+{ MODKEY,                       XK_s,          focusstack,             {.i = +1 } },
+{ MODKEY,                       XK_w,          focusstack,             {.i = -1 } },
+``` 
+
+最小化窗口和解除全部最小化
+
+```c
+{ MODKEY,           XK_c,          showhideclient,         {0} },
+{ MODKEY|ShiftMask,             XK_c,          unhideall,              {0} },
+```
+
+增加/减少 master 区域的窗口数量
+
+```c
+{ MODKEY,                       XK_z,          incnmaster,             {.i = +1 } },
+{ MODKEY,                       XK_x,          incnmaster,             {.i = -1 } },
+```
+
+移动窗口到左右桌面 (不跳过空白虚拟桌面)
+
+```c
+{ MODKEY|ShiftMask,             XK_a,       tagtoleft,              {0} }, // note keybinding conflict with shifttag
+{ MODKEY|ShiftMask,             XK_d,      tagtoright,             {0} }, // note keybinding conflict with shifttag
+```
+
+调整窗口大小
+
+```c
+#if FLEXTILE_DELUXE_LAYOUT
+
+...
+
+#endif // FLEXTILE_DELUXE_LAYOUT
+{ MODKEY,                       XK_g,          setmfact,               {.f = -0.05} },
+{ MODKEY,                       XK_h,          setmfact,               {.f = +0.05} },
+#if CFACTS_PATCH
+{ MODKEY|ShiftMask,             XK_g,          setcfact,               {.f = +0.25} },
+{ MODKEY|ShiftMask,             XK_h,          setcfact,               {.f = -0.25} },
+
+...
+
+#endif // CFACTS_PATCH
+#if ASPECTRESIZE_PATCH
+```
+
+关闭窗口
+
+```c
+{ Mod1Mask,                     XK_F4,         killclient,             {0} },
+```
+
+退出桌面环境
+
+```c
+{ MODKEY|ShiftMask,             XK_F12,        quit,                   {0} },
+```
+
+如果你不需要调整布局
+
+```c
+// { MODKEY,                       XK_t,          setlayout,              {.v = &layouts[0]} },
+// { MODKEY,                       XK_f,          setlayout,              {.v = &layouts[1]} },
+// { MODKEY,                       XK_m,          setlayout,              {.v = &layouts[2]} },
+```
+
+```c
+// { MODKEY,                       XK_space,      setlayout,              {0} },
+```
+
+切换浮动窗口
+
+```c
+{ MODKEY,                       XK_f,      togglefloating,         {0} },
+```
+
+开启全屏
+
+```c
+{ MODKEY|ShiftMask,                       XK_f,          togglefullscreen,       {0} },
+```
+
+# 电源脚本编写, 使用rofi
+
+```bash
+MENU="rofi -dmenu -p Power"
+
+options="Suspend\nSleep\nRestart\nShutdown\nExit"
+
+chosen=$(echo -e "$options" | $MENU)
+
+case "$chosen" in
+    Suspend)
+        systemctl suspend
+        ;;
+    Sleep)
+        systemctl hibernate
+        ;;
+    Restart)
+        reboot
+        ;;
+    Shutdown)
+        poweroff
+        ;;
+    Exit)
+        pkill dwm
+        ;;
+    *)
+        exit 0
+        ;;
+esac
+```
+
+# 状态栏脚本编写
+
+编写 `dwm_bar.sh` 放到合适位置
+
+```bash
+#!/bin/bash
+
+CLR_CPU="^c#BF616A^"     # 红
+CLR_MEM="^c#D08770^"     # 橙
+CLR_VOL="^c#A3BE8C^"     # 绿
+CLR_MIC="^c#88C0D0^"     # 青
+CLR_PWR="^c#81A1C1^"     # 蓝
+CLR_BAT="^c#B48EAD^"     # 紫
+CLR_DATE="^c#ECEFF4^"    # 白
+CLR_WARN="^c#ECEFF4^^b#BF616A^" # 警告
+RESET="^d^"
+
+
+update_status() {
+    # --- CPU 使用率 ---
+    CPU_VAL=$(grep 'cpu ' /proc/stat | awk '{usage=($2+$4)*100/($2+$4+$5)} END {printf("%.0f", usage)}')
+    CPU_DIS="${CLR_CPU}CPU:${CPU_VAL:-0}%${RESET}"
+
+    # --- 内存使用率 ---
+    MEM_TOTAL=$(awk '/MemTotal/ {print $2}' /proc/meminfo)
+    MEM_AVAIL=$(awk '/MemAvailable/ {print $2}' /proc/meminfo)
+    MEM_VAL=$(( (MEM_TOTAL - MEM_AVAIL) * 100 / MEM_TOTAL ))
+    MEM_DIS="${CLR_MEM}MEM:${MEM_VAL}%${RESET}"
+
+    # --- 扬声器音量 ---
+    V_NUM=$(pactl get-sink-volume @DEFAULT_SINK@ 2>/dev/null | grep -Po '\d+(?=%)' | head -n 1 || echo "0")
+    if pactl get-sink-mute @DEFAULT_SINK@ 2>/dev/null | grep -q "yes"; then
+        VOL_DIS="${CLR_WARN}VOL:M${RESET}"
+    else
+        VOL_DIS="${CLR_VOL}VOL:${V_NUM}%${RESET}"
+    fi
+
+    # --- 麦克风音量 ---
+    M_NUM=$(pactl get-source-volume @DEFAULT_SOURCE@ 2>/dev/null | grep -Po '\d+(?=%)' | head -n 1 || echo "0")
+    if pactl get-source-mute @DEFAULT_SOURCE@ 2>/dev/null | grep -q "yes"; then
+        MIC_DIS="${CLR_WARN}MIC:M${RESET}"
+    else
+        MIC_DIS="${CLR_MIC}MIC:${M_NUM}%${RESET}"
+    fi
+
+    # --- 电源模式 (Power-Profiles-Daemon) ---
+    PWR_MODE=$(powerprofilesctl get 2>/dev/null || echo "N/A")
+    case "$PWR_MODE" in
+        *performance*) PWR_STR="PERF" ;;
+        *balanced*)    PWR_STR="BAL"  ;;
+        *power-saver*) PWR_STR="SAVE" ;;
+        *)             PWR_STR="N/A"  ;;
+    esac
+    PWR_DIS="${CLR_PWR}PWR:${PWR_STR}${RESET}"
+
+    # --- 亮度 ---
+    BRIGHT_VAL=$(brightnessctl g 2>/dev/null | awk '{print int($1/255*100)}' || echo "0")
+    BRT_DIS="${CLR_BRT}BRT:${BRIGHT_VAL}%${RESET}"
+
+    # --- 电池 ---
+    BAT_PATH=$(ls /sys/class/power_supply/BAT* -d 2>/dev/null | head -n 1)
+    if [ -n "$BAT_PATH" ]; then
+        BAT_VAL=$(cat "$BAT_PATH/capacity" 2>/dev/null || echo "0")
+        [ "$BAT_VAL" -lt 20 ] && BAT_DIS="${CLR_WARN}BAT:${BAT_VAL}%${RESET}" || BAT_DIS="${CLR_BAT}BAT:${BAT_VAL}%${RESET}"
+    else
+        BAT_DIS=""
+    fi
+    
+    # --- 时间 ---
+    DATE_VAL=$(date +"%m.%d %H:%M")
+    DATE_DIS="${CLR_DATE}${DATE_VAL}${RESET}"
+
+    STATUS=" ${CPU_DIS} ${MEM_DIS} ${VOL_DIS} ${MIC_DIS} ${PWR_DIS} ${BRT_DIS} ${BAT_DIS}  ${DATE_DIS} "
+    
+    xprop -root -f WM_NAME 8s -set WM_NAME "$STATUS"
+}
+
+(
+    while true; do
+        update_status
+        sleep 2
+    done
+) &
+
+(
+    pactl subscribe 2>/dev/null | grep --line-buffered -E "sink|source" | while read -r _; do
+        update_status
+    done
+) &
+
+update_status
+while true; do sleep 60; done
+```
