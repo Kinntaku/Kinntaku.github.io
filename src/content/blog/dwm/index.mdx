@@ -172,6 +172,12 @@ rog-control-center & # 华硕面板
 exec dwm
 ```
 
+修改 `/etc/greetd/config.toml` 中的 session 配置
+
+```toml
+command = "tuigreet --asterisks --time -r --cmd 'startx ~/.xsession'"
+```
+
 ## `.Xresources` 文件
 
 其中包含了 xserver 的部分设置
