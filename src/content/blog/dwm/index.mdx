@@ -54,7 +54,7 @@ i3lock \
 --inside-color=$BLANK        \
 --ring-color=$DEFAULT        \
 --line-color=$BLANK          \
---separator-color=$DEFAULT   \
+--separator-color=$BLANK     \
 \
 --verif-color=$TEXT          \
 --wrong-color=$TEXT          \
@@ -83,6 +83,7 @@ i3lock \
 --verif-pos="w/2:h/2"       \
 --wrong-pos="w/2:h/2"       \
 --modif-pos="w/2:h-30"      \
+--status-pos="w/2:h/2"      \
 ```
 
 参考 `https://github.com/Raymo111/i3lock-color/blob/master/examples/lock.sh`
@@ -203,8 +204,6 @@ Xcursor.size: 32 # 设置鼠标指针大小
 
 - `BAR_WINTITLE_PATCH`: 显示窗口标题, 是 `BAR_AWESOMEBAR_PATCH` 的依赖
 
-- `ALWAYSCENTER_PATCH`: 允许设置浮动窗口出现的位置
-
 - `CFACTS_PATCH`: 允许调整单独平铺窗口大小
 
 - `DRAGCFACT_PATCH`: 允许通过按键拖拽调整平铺窗口高度
@@ -227,7 +226,9 @@ Xcursor.size: 32 # 设置鼠标指针大小
 
 - `TILE_LAYOUT`: 默认的布局模式, 还有很多模式可以参考
 
-- `FULLSCREEN_PATCH` 允许设置全屏
+- `FULLSCREEN_PATCH`: 允许设置全屏
+
+- `PLACEMOUSE_PATCH`: 允许通过鼠标拖拽调换窗口位置
 
 
 ## 修改外观
@@ -439,6 +440,14 @@ static const Key keys[] = {
 
 #endif // CFACTS_PATCH
 #if ASPECTRESIZE_PATCH
+```
+
+移动窗口位置
+
+```c
+#if MOVESTACK_PATCH
+{ MODKEY|ShiftMask,             XK_s,          movestack,              {.i = +1 } },
+{ MODKEY|ShiftMask,             XK_w,          movestack,              {.i = -1 } },
 ```
 
 关闭窗口
