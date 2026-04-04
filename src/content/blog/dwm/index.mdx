@@ -108,6 +108,31 @@ opacity-rule = [
 ];
 ```
 
+# 触控板以及鼠标
+
+- 开启触控板自然滚动，轻触点击
+
+- 调整触摸板和鼠标的速度为 0.5 \[0,1\] 这样更快
+```bash
+Section "InputClass" 
+ Identifier "libinput pointer catchall"
+ MatchIsPointer "on"
+ Option "NaturalScrolling" "false"
+ Option "AccelProfile" "flat"
+ Option "AccelSpeed" "0.5"
+EndSection
+
+
+Section "InputClass"
+ Identifier "libinput touchpad catchall"
+ MatchIsTouchpad "on"
+ Option "NaturalScrolling" "true"
+ Option "Tapping" "on"
+ Option "TappingButtonMap" "lrm"
+ Option "AccelSpeed" "0.5"
+EndSection
+```
+
 # dwm
 
 dwm 的设计理念为 suckless, 所有的自定义配置都需要修改头文件重新编译, 但是其具有极高的可拓展性, 可以通过应用 patch 进行扩展, 但是由于传统的手动应用 patch 需要解决过于复杂的合并工作, 以及需要遵守相当严格的合并顺序, 所以这里使用一个第三方的 dwm 改版: dwm-flexipatch, 这个版本将大部分常用补丁全部打入, 通过宏定义控制补丁的开启, 未开启的补丁在编译的时候会直接忽略以节省性能
@@ -304,7 +329,7 @@ static const Rule rules[] = {
 
     // 设置微信主窗口平铺, 其余窗口浮动, QQ 同理
 	RULE(.class = "wechat", .isfloating = 1)
-	RULE(.class = "wechat", .title = "Weixin", .isfloating = 0)
+	RULE(.class = "wechat", .title = "微信", .isfloating = 0)
 
 	RULE(.class = "QQ", .isfloating = 1)
 	RULE(.class = "QQ", .title = "QQ", .isfloating = 0)
@@ -411,8 +436,8 @@ static const Key keys[] = {
 增加/减少 master 区域的窗口数量
 
 ```c
-{ MODKEY,                       XK_z,          incnmaster,             {.i = +1 } },
-{ MODKEY,                       XK_x,          incnmaster,             {.i = -1 } },
+{ MODKEY,                       XK_F1,          incnmaster,             {.i = +1 } },
+{ MODKEY,                       XK_F2,          incnmaster,             {.i = -1 } },
 ```
 
 移动窗口到左右桌面 (不跳过空白虚拟桌面)

@@ -9,7 +9,7 @@ image: './banner.png'
 
 # 软件配置
 
-- 驱动
+- 硬件
 
     - 电源配置项
     
@@ -17,7 +17,7 @@ image: './banner.png'
 
     - AMD
 
-        vulkan-radeon vulkan-mesa-layers libva libva-utils
+        mesa lib32-mesa vulkan-radeon vulkan-mesa-layers
         
     - NVIDIA
 
@@ -27,40 +27,61 @@ image: './banner.png'
 
         libva libva-utils
 
-- 音频
-    
-    pipewire-pulse sof-firmware alsa-firmware alsa-ucm-conf
-    
+    - 网络服务
+        
+        bluez networkmanger
 
-- 华硕
+    - 音频
     
-    asusctl rog-control-center
+        pipewire-pulse sof-firmware alsa-firmware alsa-ucm-conf
+
+    - 华硕驱动
+    
+        asusctl rog-control-center
 
 - Btrfs
     
     snapper btrfs-assistant 
 
-- Arch相关
+- 系统相关
     
-    paru fastfetch starship btop nvtop socat fuse2 lib3mf wev
+    - 系统依赖
+        
+        base-devel paru fuse2
+        
+    - 系统监控
+        
+        htop nvtop wev 
 
-    注: fuse2 用于 appimage 运行, lib3mf 为 meshlab 的依赖, wev 用于寻找笔记本上不知道叫什么名字的按键编号
+    - 系统美化
+        
+        fastfetch starship lsd
+
+    - 神秘小软件
+
+        AUR: flclash
+
+    注: fuse2 用于 appimage 运行, wev 用于寻找笔记本上不知道叫什么名字的按键编号
 
 - 字体
     
-    noto-fonts noto-fonts-cjk noto-fonts-emoji noto-fonts-extra ttf-jetbrains-mono ttf-jetbrains-mono-nerd
+    noto-fonts noto-fonts-cjk noto-fonts-emoji noto-fonts-extra 
     
-    aur: ttf-ms-win10-auto-zh_cn
-
+    ttf-jetbrains-mono ttf-jetbrains-mono-nerd 
+    
+    wqy-zenhei
+    
 - 登录管理器
     
     greetd greetd-tuigreet
 
 - 桌面环境
     
-    hyprland hyprpolkitagent xdg-desktop-portal-gtk xdg-desktop-portal-hyprland xorg-xwayland cava
+    hyprland hyprpolkitagent noctalia-shell 
+
+    xorg-xwayland xorg-xrdb
     
-    aur: dms-shell-bin
+    xdg-desktop-portal-gtk xdg-desktop-portal-hyprland 
 
 - 输入法
     
@@ -68,7 +89,17 @@ image: './banner.png'
 
 - 配套软件
     
-    kitty bluez firewalld vlc ffmpeg vlc-plugin-ffmpeg featherpad file-roller thunar thunar-volman thunar-archive-plugin
+    kitty firewalld vlc ffmpeg vlc-plugin-ffmpeg featherpad guvcview qalculate-qt obs-studio chromium
+
+    aur: xnviewmp
+
+    注: 由于加密媒体设定, chromium 有概率无法登录推特, 但多试几天也能登上去, 需稳定登录推特可换用 google-chrome (AUR)
+
+- 文件相关
+
+    thunar thunar-volman tumbler gvfs gvfs-mtp
+
+    aur: peazip-qt-bin
 
 - 主题美化
     
@@ -79,36 +110,44 @@ image: './banner.png'
     wl-clipboard wl-clip-persist cliphist
 
 - 截图
-    
-    grim satty
 
-    注: grim + satty 可实现冻结截图 + 截取右键菜单, 不支持中文标注, 且由于 satty 是 gtk4 应用, 冷启动耗时, 截图总耗时约5s, grim + slurp + swappy 可实现中文标注 + 截取右键菜单, 不支持冻结截图, 且 swappy 无法调整窗口大小, hyprshot + swappy 可实现冻结截图 + 中文标注, 不支持截取右键菜单, 且hyprshot 有一定延迟, 或者可以选择 xwayland 后台运行的截图软件, 这类软件具备快速相响应的特点, 如 snipaste 和 flameshot, 但 snipaste 在 hyprland 下无法使用快捷键, falmeshot 对分数缩放不友好且有较高延迟
+    grim swappy slurp hyprpicker
+
+    注: 
+
+    - grim: 截取屏幕
+
+    - swappy: 截图编辑器
+
+    - slurp: 截图区域选择
+    
+    - hyprpicker: 实现冻结截图
 
 - 自用生产力软件
     
-    xournalpp kdenlive obs-studio blender krita code chromium 
+    kdenlive blender krita
     
-    aur: wps-office-cn wps-office-mui-zh-cn xnviewmp flclash code-marketplace code-features lceda-pro stm32cubemx
-o
-    注: 由于加密媒体设定, chromium 有概率无法登录推特, 但多试几天也能登上去, 需稳定登录推特可换用 google-chrome (AUR)
-
-    注: arch 和 cachyos 官方源中的 code 是 oss 版本, 所使用的插件源和功能和 visual studio code 有所不同, 可通过安装 `code-marketplace` 开启官方插件仓库和 `code-features` 启用 Github Copilot. 或者如果你不那么魔怔的话可以直接安装 aur 中的 `visual-studio-code-bin`, 这个是微软官方版本的 vscode
+    aur: wps-office-cn wps-office-mui-zh-cn visual-studio-code-bin 
 
 - docker
     
-    xorg-xhost lazydocker distrobox nvidia-container-toolkit
+    xorg-xhost lazydocker distrobox nvidia-container-toolkit podman
 
 - 虚拟机
     
-    virt-manager qemu-full
+    virt-manager qemu-full libvirt
 
 - 开发
     
-    picocom cmake jdk21-openjdk
+    - 嵌入式开发
+        
+        picocom cmake arm-none-eabi-gcc arm-none-eabi-newlib openocd
+
+        aur: stm32cubemx lceda-pro jlc-assistant-bin
 
 - 娱乐
     
-    steam prism-launcher zerotier-one
+    jdk21-openjdk zerotier-one steam prism-launcher zerotier-one
 
 - 社交工作软件
     
@@ -116,13 +155,12 @@ o
 
     注: wemeet-bin 的共享屏幕在 hyprland 下仍不可用, kde 下可正常运行, hyprland 下可使用 flatpak 版本, 或者曲线救国使用 obs 虚拟摄像头
 
-- 让你的生活更美好的软件
+- 一些小工具
     
     localsend
 
-    aur: pureref qtscrcpy-bin motrix-bin meshlab
+    aur: pureref motrix-bin
 
-    注: aur 上的 meshlab 是需要自行编译的, 如果觉得浪费时间可以使用 appimage 版
 
 # 准备工作
 
@@ -248,6 +286,14 @@ confirm_os_window_close 0
 
 关闭进程结束确认对话框
 
+## 设置 X11 软件缩放
+
+创建并编辑 `~/.Xresources`
+
+```bash
+Xft.dpi: 144
+```
+
 ## Hyprland 配置文件
 
 默认配置文件 /usr/share/hypr/hyprland.conf 
@@ -260,8 +306,6 @@ confirm_os_window_close 0
 
 ```ini
 env = LANG,zh_CN.UTF-8
-env = LC_MESSAGES,zh_CN.UTF-8
-env = LC_CTYPE,zh_CN.UTF-8 # 设置中文
 env = QT_QPA_PLATFORMTHEME,qt6ct   # 设置 QT 主题
 ```
 
@@ -274,18 +318,21 @@ monitor=,preferred,auto,1.60
 修改默认应用
 
 ```ini
+$terminal = kitty
 $fileManager = thunar
 ```
 
 自动启动
 
 ```ini
-exec-once = dms run
+exec-once = kitty zsh -c "fastfetch; exec zsh" # 装逼使用
+exec-once = qs -c "noctalia-shell"
 exec-once = fcitx5
 exec-once = flclash
 exec-once = rog-control-center
 exec-once = wl-paste --watch cliphist store
 exec-once = systemctl --user start hyprpolkitagent
+exec-once = xrdb -merge ~/.Xresources
 ```
 
 通用
@@ -296,36 +343,13 @@ general{
     gaps_in = 1 # 窗口内边距
     gaps_out = 1 # 窗口外边距
 
-    resize_on_border = false # 允许直接使用鼠标在窗口边缘调整窗口大小
+    resize_on_border = true # 允许直接使用鼠标在窗口边缘调整窗口大小
 
-    # 添加内容    
+    ...
 
+    layout = scrolling # 类似 Niri 的滚动布局
 }
 ```
-
-关闭默认二次元壁纸
-
-hyprland 的壁纸貌似是强制显示的, 目前来看除了强制删除没有别的办法
-
-方法1: 来自官方文档, 但是没有效果
-
-```ini
-misc{
-    disable_hyprland_logo = true # 禁用内置的背景图
-    force_default_wallpaper = 0 # 禁用内置壁纸，后面会使用 dms 接管
-}
-```
-
-方法2: 目前有效办法
-
-```bash
-# 删除壁纸文件
-sudo rm -rf /usr/share/hypr/wall*
-
-# 强制锁定壁纸文件夹, 防止更新又回来
-sudo chattr +i /usr/share/hypr/
-```
-
 
 装饰
 
@@ -350,36 +374,43 @@ decoration {
 
 ```ini
 animations {
+    
     enabled = yes
 
-    # 保持贝塞尔曲线定义
-    bezier = quick, 0.15, 0, 0.1, 1 # 只保留快速曲线
+    # 贝塞尔曲线定义
+    bezier = quick, 0.2, 1, 0.2, 1
 
     # 窗口动画
     animation = windows,    1, 2.5, quick
-    animation = windowsIn,  1, 2.5, quick
-    animation = windowsOut, 1, 2.5, quick
 
     # 禁用渐入渐出
-    animation = fadeIn,       0, 1, default
-    animation = fadeOut,      0, 1, default
     animation = fade,         0, 1, default
-    animation = fadeLayersIn, 0, 1, default
-    animation = fadeLayersOut,0, 1, default
+    
+    # 工作区切换, 为了适配 scrolling 布局, 改成了竖直切换
+    animation = workspaces, 1, 2.0, quick, slidevert
 
-    # layers 动画 (弹窗/全屏)  
-    animation = layersIn,     0, 1, default
-    animation = layersOut,    0, 1, default
-
-    # 工作区切换 (可保留 slide 或禁用)  
-    animation = workspaces,    1, 2.0, quick
-    animation = workspacesIn,  1, 2.0, quick
-    animation = workspacesOut, 1, 2.0, quick
-
-    # 其他
-    animation = border,     1, 1, quick
-    animation = zoomFactor, 1, 2, quick
 }
+```
+
+滚动布局设置
+
+```ini
+scrolling {
+    fullscreen_on_one_column = false # 关闭工作区只有一个窗口时自动占满宽度
+    column_width=0.55 # 设置默认宽度
+    explicit_column_widths = 0.55, 1.0 # 设置可以切换的宽度列表
+    focus_fit_method = 0 # 移动焦点时自动居中窗口而不是到刚好把窗口送进屏幕就停止
+}
+```
+
+关闭默认二次元壁纸
+
+```ini
+misc {
+    force_default_wallpaper = 0 # Set to 0 or 1 to disable the anime mascot wallpapers
+    disable_hyprland_logo = true # If true disables the random hyprland logo / anime girl background. :(
+}
+
 ```
 
 输入设置
@@ -387,11 +418,11 @@ animations {
 ```ini
 input {
 
-    follow_mouse = 2 # 更像 windows 的鼠标逻辑
+    follow_mouse = 2 # 关闭鼠标跟随焦点, 但是允许不对焦时滚动内容
 
     # 添加内容
     numlock_by_default = 1 # 开启小键盘锁定
-    float_switch_override_focus = 0 # 更像 windows 的鼠标逻辑
+    float_switch_override_focus = 0 # 阻止鼠标到浮动窗口时被浮动窗口抢焦点
     
     touchpad {
         natural_scroll = true  # 开启触摸板的自然滚动
@@ -399,80 +430,130 @@ input {
 }
 ```
 
+手势
+
+```ini
+gesture = 3, vertical, workspace, r
+gesture = 3, right, dispatcher, layoutmsg, move -col
+gesture = 3, left, dispatcher, layoutmsg, move +col
+```
+
 更符合人类习惯的键位绑定
 
 ```ini
+# Open Software
 bind = $mainMod, T, exec, $terminal
-bind = ALT, F4, killactive,
-# bind = $mainMod, M, exec, command -v hyprshutdown >/dev/null 2>&1 && hyprshutdown || hyprctl dispatch exit # 注释这个防止误触关闭 hyprland
+bind = $mainMod, E, exec, $fileManager
+bind = CONTROL SHIFT, Escape, exec, kitty htop
+bind = ALT, SPACE, exec, kitty -e navi --path "$HOME/user_dotfiles/navi"
 
+
+# Window config
+bind = ALT,  F4, killactive,
 bind = $mainMod, F, togglefloating,
-bind = $mainMod, up, fullscreen,
 
-# bind = $mainMod, left, movefocus, l # 没啥用, ALT+TAB 就行
-# bind = $mainMod, right, movefocus, r
-# bind = $mainMod, up, movefocus, u
-# bind = $mainMod, down, movefocus, d
+bind = SUPER SHIFT, F, layoutmsg, colresize +conf
+binde = SUPER, G, layoutmsg, colresize -0.1
+binde = SUPER, H, layoutmsg, colresize +0.1
 
-bind = $mainMod, mouse_down, workspace, e-1 # 修复鼠标方向
-bind = $mainMod, mouse_up, workspace, e+1
 
-# 添加内容
 
-bindl = , XF86Launch3, exec, rog-control-center
-bind = ALT, W, exec, dms ipc call spotlight toggle # 快速启动
-bind = $mainMod, V, exec, dms ipc call clipboard toggle # 剪贴板
-bind = $mainMod, A, exec, dms ipc call notifications toggle # 通知中心
-bind = $mainMod, TAB, exec, dms ipc call hypr toggleOverview # 虚拟桌面预览
-bind = $mainMod, L, exec, dms ipc call lock lock #锁屏
-bind = $mainMod, X, exec, dms ipc call powermenu toggle # 电源菜单
-bind = $mainMod, I, exec, dms ipc call control-center toggle # dms 控制中心
+# Layout and position
+bind = $mainMod, 1, workspace, 1
+bind = $mainMod, 2, workspace, 2
+bind = $mainMod, 3, workspace, 3
+bind = $mainMod, 4, workspace, 4
+bind = $mainMod, 5, workspace, 5
+bind = $mainMod, 6, workspace, 6
+bind = $mainMod, 7, workspace, 7
+bind = $mainMod, 8, workspace, 8
+bind = $mainMod, 9, workspace, 9
+bind = $mainMod, 0, workspace, 10
+bind = $mainMod SHIFT, 1, movetoworkspace, 1
+bind = $mainMod SHIFT, 2, movetoworkspace, 2
+bind = $mainMod SHIFT, 3, movetoworkspace, 3
+bind = $mainMod SHIFT, 4, movetoworkspace, 4
+bind = $mainMod SHIFT, 5, movetoworkspace, 5
+bind = $mainMod SHIFT, 6, movetoworkspace, 6
+bind = $mainMod SHIFT, 7, movetoworkspace, 7
+bind = $mainMod SHIFT, 8, movetoworkspace, 8
+bind = $mainMod SHIFT, 9, movetoworkspace, 9
+bind = $mainMod SHIFT, 0, movetoworkspace, 10
 
-bind = , XF86MonBrightnessUp, exec, dms ipc call brightness increment 5 "" # 亮度调整, 注意后面需要加引号指定设备, 引号内留空默认指代所有设备
-bind = , XF86MonBrightnessDown, exec, dms ipc call brightness decrement 5 ""
+bind = $mainMod, D, layoutmsg, move +col
+bind = $mainMod, A, layoutmsg, move -col
+bind = $mainMod SHIFT, D, layoutmsg, swapcol r
+bind = $mainMod SHIFT, A, layoutmsg, swapcol l
 
-bind = CONTROL SHIFT, Escape, exec, kitty htop # 任务管理器
+bind = $mainMod, W, workspace, r-1
+bind = $mainMod, S, workspace, r+1
+bind = $mainMod, mouse_down, workspace, r-1
+bind = $mainMod, mouse_up, workspace, r+1
+bind = $mainMod SHIFT, W, movetoworkspace, r-1
+bind = $mainMod SHIFT, S, movetoworkspace, r+1
 
-# 窗口切换
-bind = ALT, TAB, cyclenext # 切换窗口
-bind = ALT, Tab, alterzorder, top, current # 实现切换切换的窗口置顶
+bind = $mainMod ALT, W, movefocus, u
+bind = $mainMod ALT, S, movefocus, d
 
-# 截图
-bind = ALT, Q, exec, grim - | satty --filename - 
-bind = , Print, exec, grim -t ppm - | magick - png:- | wl-copy
+bind = $mainMod, Z, movewindow, l
+bind = $mainMod SHIFT, Z, layoutmsg, promote
 
+bind = $mainMod, M, togglespecialworkspace, magic
+bind = $mainMod SHIFT, M, movetoworkspace, special:magic
+
+bindm = $mainMod, mouse:272, movewindow
+bindm = $mainMod, mouse:273, resizewindow
+
+bind = ALT, TAB, cyclenext
+bind = ALT SHIFT, TAB, cyclenext, prev
+
+
+
+# Noctalia Shell
+$ipc = qs -c noctalia-shell ipc call
+# Laptop multimedia keys for volume and LCD brightness
+bindel = , XF86AudioRaiseVolume, exec, $ipc volume increase
+bindel = , XF86AudioLowerVolume, exec, $ipc volume decrease
+bindel = , XF86AudioMute, exec, $ipc volume muteOutput
+bindel = ,XF86AudioMicMute, exec, $ipc volume muteInput
+bindel = , XF86MonBrightnessUp, exec, $ipc brightness increase
+bindel = , XF86MonBrightnessDown, exec, $ipc brightness decrease
+bindel = , XF86AudioNext, exec, $ipc media next
+bindel = , XF86AudioPrev, exec, $ipc media previous
+bindel = , XF86AudioPlay, exec, $ipc media playPause 
+
+bind = , XF86Launch3, exec, rog-control-center
+bind = , XF86Launch5, exec, $ipc powerProfile cycle
+bind = $mainMod, grave, exec, $ipc launcher toggle
+bind = $mainMod, V, exec, $ipc launcher clipboard
+bind = $mainMod, N, exec, $ipc notifications toggleHistory
+bind = $mainMod, L, exec, $ipc lockScreen lock
+bind = $mainMod, X, exec, $ipc sessionMenu toggle
+bind = $mainMod, I, exec, $ipc controlCenter toggle
+bind = $mainMod ALT, E, exec, $ipc launcher emoji 
+bind = $mainMod ALT, V, exec, $ipc volume togglePanel
+
+
+
+# Screenshot
+bind = $mainMod, Q, exec, hyprpicker -r -z & sleep 0.2 && grim -g "$(slurp)" - | wl-copy; pkill hyprpicker
+bind = $mainMod SHIFT, Q, exec, wl-paste --type image/png | swappy -f -
+bind = , Print, exec, grim - | wl-copy
 ```
 
 窗口规则
 
 ```ini
-# 浮动窗口规则
-windowrule = float on, size 800 500, center on, match:class (?i).*thunar.*
-windowrule = float on, size 800 500, center on, match:title (?i).*rename.*
-windowrule = float on, size 800 500, center on, match:class (?i).*clash.*
-windowrule = float on, size 1000 500, center on, match:class (?i).*rog-control-center.*
-windowrule = float on, size 800 500, opacity 0.9 override, center on, match:class ^(kitty)$ # 同时设置透明度
-windowrule = float on, size 800 500, center on, match:class ^(top)$
-windowrule = float on, size 800 500, center on, match:class ^(exo-desktop-item-edit)$
-windowrule = float on, size 800 500, center on, match:class ^(org.gnome.FileRoller)$
-windowrule = float on, size 800 500, center on, match:class ^(xdg-desktop-portal-gtk)$
 
+# wps 修复
+windowrule = no_anim on, float on, match:title ^wps$
+windowrule = no_anim on, float on, match:title ^et$
+windowrule = no_anim on, float on, match:title ^wpp$
 
-# 常用 Python 浮动窗口
-windowrule = float on, size 800 500, center on, match:title (?i).*MuJoCo.*
-windowrule = float on, size 800 500, center on, match:title (?i).*figure.*
-windowrule = float on, size 800 500, center on, match:title (?i).*OpenCV.*
-windowrule = float on, size 800 500, center on, match:class ^(python3)$
+# 部分软件半透明
+windowrule = opacity 0.95 override, match:class ^(code)$
+windowrule = opacity 0.9 override, match:class ^(kitty)$
 
-# 社交软件窗口规则
-# 越往下优先级越大, 发现只有主窗口的 title 和 class 都是 QQ 或者微信, 子窗口的 title 会变化, 利用这个完成主窗口不浮动子窗口浮动
-windowrule = float on, size 800 500, center on, match:class ^(QQ)$
-windowrule = tile on, match:class ^(QQ)$, match:title ^(QQ)$
-windowrule = float on, size 800 500, center on, match:class ^(微信)$
-windowrule = tile on, match:class ^(QQ)$, match:title ^(微信)$
-
-# vscode美化
-windowrule = opacity 0.9 override, match:class ^(code)$
 
 # 关闭 xwayland 缩放防止模糊
 xwayland{
@@ -480,77 +561,6 @@ xwayland{
 }
 ```
 
-## Hyprland 实现最小化的哲学
-
-特殊工作区是 Hyprland 上的一个叠加层, 会叠加在当前工作区上方
-
-最小化本质上是把需要最小化的临时窗口在特殊工作区打开
-
-但是会出现问题, 比如我在特殊工作区的临时任务管理器中打开一个文档, 那么这个文档显然不属于临时窗口, 所以需要把这个文档移动回原来的工作区
-
-安装软件
-
-```bash
-sudo pacman -S socat jq
-```
-
-创建脚本写入
-
-```bash
-#!/bin/bash
-
-HIS=$HYPRLAND_INSTANCE_SIGNATURE
-SOCKET_PATH="$XDG_RUNTIME_DIR/hypr/$HIS/.socket2.sock"
-
-# 监听事件流
-socat -U - UNIX-CONNECT:"$SOCKET_PATH" | while read -r line; do
-    
-    # 处理新打开的平铺窗口 (直接捕获 openwindow)
-    if [[ "$line" == openwindow* ]]; then
-        ADDR="0x${line#*>>}"
-        ADDR="${ADDR%%,*}"
-        
-        WS_NAME=$(hyprctl clients -j | jq -r ".[] | select(.address == \"$ADDR\") | .workspace.name" 2>/dev/null)
-        IS_FLOATING=$(hyprctl clients -j | jq -r ".[] | select(.address == \"$ADDR\") | .floating" 2>/dev/null)
-
-        if [[ "$WS_NAME" == special:* && "$IS_FLOATING" == "false" ]]; then
-            hyprctl dispatch movetoworkspace e+0,address:$ADDR
-            hyprctl dispatch togglespecialworkspace
-            hyprctl dispatch focuswindow address:$ADDR
-        fi
-    fi
-
-    # 处理从悬浮转为平铺, 或延迟确定的平铺状态
-    if [[ "$line" == changefloatingmode* ]]; then
-        # 格式: changefloatingmode>>ADDR,FLOATING_STATE
-        DATA="${line#*>>}"
-        ADDR="0x${DATA%%,*}"
-        STATE="${DATA#*,}"
-
-        # 如果 STATE 为 0, 说明现在是平铺状态
-        if [ "$STATE" == "0" ]; then
-            WS_NAME=$(hyprctl clients -j | jq -r ".[] | select(.address == \"$ADDR\") | .workspace.name")
-            if [[ "$WS_NAME" == special:* ]]; then
-                hyprctl dispatch movetoworkspace e+0,address:$ADDR
-                hyprctl dispatch togglespecialworkspace
-                hyprctl dispatch focuswindow address:$ADDR
-            fi
-        fi
-    fi
-done
-```
-
-授予执行权限
-
-```bash
-chmod +x minimal.sh
-```
-
-编辑 `~/.config/hypr/hyprland.conf` 添加
-
-```ini
-exec-once = minimal.sh
-```
 ## 设置 zsh
 
 关闭 zsh 历史记录
@@ -572,12 +582,6 @@ HISTFILESIZE=0
 ```bash
 alias prime-run='__NV_PRIME_RENDER_OFFLOAD=1 __VK_LAYER_NV_optimus=NVIDIA_only __GLX_VENDOR_LIBRARY_NAME=nvidia '
 ```
-
-## 配置 dms
-
-dms 设置 - 电源与安全 - 锁屏 - 挂起前锁屏: on
-
-dms 设置 - 活动应用程序 - 仅显示当前工作区的活动应用: on
 
 ## 配置 thunar
 
@@ -686,6 +690,34 @@ WantedBy=multi-user.target
 sudo systemctl enable --now fix-ttynumpad.service
 ```
 
+## 字体设置
+
+准备好一个 Windows 安装镜像
+
+建议通过 ITELL YOU 下载 [新站](https://next.itellyou.cn/) [旧站](https://msdn.itellyou.cn/)
+
+```bash
+# 解压 install.wim
+7z e "your windows iso name" sources/install.wim
+
+# 解压出字体文件
+7z e install.wim -r 'Windows/Fonts/*.ttf' 'Windows/Fonts/*.ttc' -ofonts/
+
+# 创建字体目录
+sudo mkdir -p /usr/share/fonts/Windows
+
+# 复制字体
+sudo cp fonts/* /usr/share/fonts/Windows/
+
+# 授予权限
+sudo chmod 644 /usr/share/fonts/Windows/*
+
+# 刷新字体缓存
+sudo fc-cache -fv
+```
+
+打开 WPS 查看字体是否安装成功
+
 ## dotfiles 管理
 
 创建文件夹
@@ -711,92 +743,59 @@ sudo systemctl enable --now fix-ttynumpad.service
 ```bash
 #!/bin/bash
 
-# 获取脚本所在目录的绝对路径
 DOTFILES_DIR=$(cd "$(dirname "$0")"; pwd)
-CONFIG_DIR="$HOME/.config"
 
-# 确保 .config 目录存在
-mkdir -p "$CONFIG_DIR"
+echo "--- 开始应用 Dotfiles ---"
 
-# 定义执行软链接的函数
-link_file() {
-    local src=$1
-    local dest=$2
-
-    # 如果目标已存在且是普通文件 (不是软链接)  , 先备份
-    if [ -f "$dest" ] && [ ! -L "$dest" ]; then
-        echo "备份原文件: $dest -> $dest.bak"
-        mv "$dest" "$dest.bak"
-    fi
-
-    # 创建软链接 (-s: soft, -f: force, -n: treat link name as normal file)
-    ln -sfn "$src" "$dest"
-    echo "已链接: $dest -> $src"
+cleanup_dead_links() {
+    local target_dir="$1"
+    local source_dir="$2"
+    echo "清理 $target_dir 中的失效链接..."
+    find "$target_dir" -maxdepth 1 -type l | while read -r link; do
+        target_path=$(readlink "$link")
+        if [[ "$target_path" == "$source_dir"* ]] && [ ! -e "$target_path" ]; then
+            rm "$link"
+            echo "已删除失效链接: $(basename "$link")"
+        fi
+    done
 }
 
-echo "--- 开始部署 Dotfiles ---"
+# 1. 处理 home 文件夹内容
+if [ -d "$DOTFILES_DIR/home" ]; then
+    for item in "$DOTFILES_DIR/home"/* "$DOTFILES_DIR/home"/.[!.]*; do
+        [ -e "$item" ] || continue
+        base_name=$(basename "$item")
+        target="$HOME/$base_name"
+        
+        # 核心修改：使用 -snf
+        # -s: symbolic
+        # -n: no-dereference (防止在目录内创建嵌套链接)
+        # -f: force
+        ln -snf "$item" "$target"
+        echo "已链接: $base_name -> $target"
+    done
+    cleanup_dead_links "$HOME" "$DOTFILES_DIR/home"
+fi
 
-# 1. 处理 home 目录下的文件 (如 .zshrc)
-# 遍历 home 文件夹下所有以 . 开头的文件
-for file in "$DOTFILES_DIR/home"/.*; do
-    # 排除 . 和 .. 目录
-    basename=$(basename "$file")
-    if [ "$basename" != "." ] && [ "$basename" != ".." ]; then
-        link_file "$file" "$HOME/$basename"
-    fi
-done
+# 2. 处理 config 文件夹内容
+if [ -d "$DOTFILES_DIR/config" ]; then
+    mkdir -p "$HOME/.config"
+    for item in "$DOTFILES_DIR/config"/*; do
+        [ -e "$item" ] || continue
+        base_name=$(basename "$item")
+        target="$HOME/.config/$base_name"
+        
+        # 同理，使用 -snf
+        ln -snf "$item" "$target"
+        echo "已链接: $base_name -> $target"
+    done
+    cleanup_dead_links "$HOME/.config" "$DOTFILES_DIR/config"
+fi
 
-# 2. 处理 config 目录下的文件夹 (如 nvim, fzf)
-for dir in "$DOTFILES_DIR/config"/*; do
-    if [ -d "$dir" ]; then
-        basename=$(basename "$dir")
-        link_file "$dir" "$CONFIG_DIR/$basename"
-    fi
-done
 
-echo "--- 部署完成！ ---"
+echo "--- Dotfiles 应用完成 ---"
 ```
 
-- 给 shotcut_scripts 目录下的脚本生成桌面快捷方式
-
-```bash
-#!/bin/bash
-
-# 获取项目根目录的绝对路径
-DOTFILES_DIR=$(cd "$(dirname "$0")"; pwd)
-DESKTOP_DIR="$HOME/.local/share/applications"
-
-# 确保桌面快捷方式目录存在
-mkdir -p "$DESKTOP_DIR"
-
-echo "--- 开始为 shotcut_scripts 目录下的脚本生成桌面快捷方式 ---"
-
-for script in "$DOTFILES_DIR/shotcut_scripts"/*.sh; do
-    # 获取文件名和不带后缀的名称
-    filename=$(basename "$script")
-    name="${filename%.*}"
-
-    desktop_file="$DESKTOP_DIR/$name.desktop"
-
-    # 创建 .desktop 文件
-    cat > "$desktop_file" <<EOF
-[Desktop Entry]
-Version=1.0
-Type=Application
-Name=$name
-Comment=Launch $name script
-Exec=$script
-Icon=utilities-terminal
-Terminal=false
-Categories=Script;Utility;
-EOF
-
-    # 赋予执行权限
-    chmod +x "$desktop_file"
-    echo "已生成: $desktop_file"
-done
-echo "快捷方式已存放到: $DESKTOP_DIR"
-```
 
 # 必要软件设置
 
@@ -805,7 +804,9 @@ echo "快捷方式已存放到: $DESKTOP_DIR"
 编辑 `~/.zshrc` 添加
 
 ```bash
-eval "$(starship init zsh)"
+if [[ "$TERM" != "linux" ]]; then # 只在交互式终端下启用
+    source <(starship init zsh)
+fi
 ```
 
 可以选择 [官网](https://starship.rs/presets/) 上的模板
@@ -1358,12 +1359,18 @@ google-chrome --enable-features=AcceleratedVideoDecodeLinuxZeroCopyGL,Accelerate
 
 谷歌扩展商店
 
-[沉浸式翻译](https://chromewebstore.google.com/detail/immersive-translate-trans/bpoadfkcbjbfhfodiogcnhhhpibjhbnh) [篡改猴](https://chromewebstore.google.com/detail/%E7%AF%A1%E6%94%B9%E7%8C%B4/dhdgffkkebhmkfjojejmpbldmpobfkfo) [Imagus Reborn](https://chromewebstore.google.com/detail/imagus-reborn/fcjmgeodgobggcppooncdagfkogfffdm) [Bitwarden](https://chromewebstore.google.com/detail/bitwarden-%E5%AF%86%E7%A0%81%E7%AE%A1%E7%90%86%E5%99%A8/nngceckbapebfimnlniiiahkandclblb) [允许复制 +](https://chromewebstore.google.com/detail/%E5%85%81%E8%AE%B8%E5%A4%8D%E5%88%B6-+/ajhbdcgfhlhhmocddefknjjkejcfpbnj) [FireShot](https://chromewebstore.google.com/detail/%E6%8D%95%E6%8D%89%E7%BD%91%E9%A1%B5%E6%88%AA%E5%9B%BE-fireshot%E7%9A%84/mcbpblocgmgfnpjjppndjkmgjaogfceg)
+[沉浸式翻译](https://chromewebstore.google.com/detail/immersive-translate-trans/bpoadfkcbjbfhfodiogcnhhhpibjhbnh) 
+[篡改猴](https://chromewebstore.google.com/detail/%E7%AF%A1%E6%94%B9%E7%8C%B4/dhdgffkkebhmkfjojejmpbldmpobfkfo) 
+[Imagus Reborn](https://chromewebstore.google.com/detail/imagus-reborn/fcjmgeodgobggcppooncdagfkogfffdm) 
+[Bitwarden](https://chromewebstore.google.com/detail/bitwarden-%E5%AF%86%E7%A0%81%E7%AE%A1%E7%90%86%E5%99%A8/nngceckbapebfimnlniiiahkandclblb) 
+[允许复制 +](https://chromewebstore.google.com/detail/%E5%85%81%E8%AE%B8%E5%A4%8D%E5%88%B6-+/ajhbdcgfhlhhmocddefknjjkejcfpbnj) [FireShot](https://chromewebstore.google.com/detail/%E6%8D%95%E6%8D%89%E7%BD%91%E9%A1%B5%E6%88%AA%E5%9B%BE-fireshot%E7%9A%84/mcbpblocgmgfnpjjppndjkmgjaogfceg)
 
 GreasyFork
 
-[OCS 网课助手](https://greasyfork.org/zh-CN/scripts/457151-ocs-%E7%BD%91%E8%AF%BE%E5%8A%A9%E6%89%8B) [bilibili视频下载](https://greasyfork.org/en/scripts/413228-bilibili%E8%A7%86%E9%A2%91%E4%B8%8B%E8%BD%BD) [CSDN Focus](https://greasyfork.org/en/scripts/420352-csdn-focus)
-
+[OCS 网课助手](https://greasyfork.org/zh-CN/scripts/457151-ocs-%E7%BD%91%E8%AF%BE%E5%8A%A9%E6%89%8B) 
+[bilibili视频下载](https://greasyfork.org/en/scripts/413228-bilibili%E8%A7%86%E9%A2%91%E4%B8%8B%E8%BD%BD) 
+[CSDN Focus](https://greasyfork.org/en/scripts/420352-csdn-focus)
+[夸克网盘直链下载](https://greasyfork.org/zh-CN/scripts/558825-%E5%A4%B8%E5%85%8B%E7%BD%91%E7%9B%98%E7%9B%B4%E9%93%BE%E4%B8%8B%E8%BD%BD%E5%8A%A9%E6%89%8B)
 
 
 ## labelme
@@ -1393,3 +1400,14 @@ podman run --rm -p 7860:7860 docker.io/awwaawwa/pdfmathtranslate-next
 ```
 
 访问 `http://127.0.0.1:7860`
+
+
+# kvm
+
+```bash
+# 启动网络
+sudo virsh net-start default
+
+# 自动启动网络
+sudo virsh net-autostart default
+```
