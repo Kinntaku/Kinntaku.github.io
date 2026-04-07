@@ -1,0 +1,346 @@
+---
+title: Nvidia 独显热直通切换
+description: Nvidia 独显热直通切换
+date: 2026-4-3
+tags: ['Hyprland','Arch']
+authors: ['kinntaku']
+---
+
+
+# 验证环境
+
+- 设备型号: 天选5Pro锐龙版, FA607PV
+
+- 硬件规格: 
+    
+    - CPU: AMD Ryzen 9 7940HX
+
+    - GPU1: NVIDIA GeForce RTX 4060 Max-Q / Mobile
+
+    - GPU2: AMD Radeon 610M
+
+- 操作系统: ArchLinux (Linux 6.19.11-1-cachyos)
+
+- 登录管理器: greetd, tuigreet-greetd
+
+- 桌面环境: Hyprland (Wayland)
+
+# 安装必要软件
+
+- 虚拟机相关: virt-manager qemu-full libvirt dnsmasq
+
+- 远程桌面: AUR: looking-glass-module-dkms
+
+# kvm 配置
+
+开启 kvm 守护进程
+
+```bash
+sudo systemctl enable --now libvirtd
+```
+
+开启网络
+
+```bash
+sudo virsh net-start default
+sudo virsh net-autostart default
+```
+
+# 创建虚拟机
+
+# 显卡配置
+
+1. 确定 nvidia 显卡的文件名称
+
+```bash
+ls -l /sys/class/drm/card*/device/driver
+ls -l /sys/class/drm/render*/device/driver
+```
+
+输出
+
+```bash
+lrwxrwxrwx 1 root root 0  4月 8日 00:45 /sys/class/drm/card0/device/driver -> ../../../../bus/pci/drivers/nvidia
+lrwxrwxrwx 1 root root 0  4月 8日 00:45 /sys/class/drm/card1/device/driver -> ../../../../bus/pci/drivers/amdgpu
+```
+
+以及
+
+```bash
+lrwxrwxrwx 1 root root 0  4月 8日 00:32 /sys/class/drm/renderD128/device/driver -> ../../../../bus/pci/drivers/amdgpu
+lrwxrwxrwx 1 root root 0  4月 8日 00:32 /sys/class/drm/renderD129/device/driver -> ../../../../bus/pci/drivers/nvidia
+```
+
+可以观察到 Nvidia 独显是 `card0` 和 `renderD129`, AMD 核显是 `card1` 和 `renderD218`, **注意, 后续所有步骤都需要用你对应显卡名称以及文件名称代替**
+
+查找 Nvidia 独立显卡的 PCI 地址
+
+```bash
+for d in /sys/kernel/iommu_groups/*/devices/*; do 
+    n=${d#*/iommu_groups/*}; n=${n%%/*}
+    printf 'IOMMU Group %s ' "$n"
+    lspci -D -nns "${d##*/}"
+done
+```
+
+观察输出中
+
+```
+IOMMU Group 14 0000:01:00.0 VGA compatible controller [0300]: NVIDIA Corporation AD107M [GeForce RTX 4060 Max-Q / Mobile] [10de:28e0] (rev a1)
+IOMMU Group 14 0000:01:00.1 Audio device [0403]: NVIDIA Corporation AD107 High Definition Audio Controller [10de:22be] (rev a1)
+```
+
+我的显卡在 Group 14 中, 该 group 包含 Nvidia 独显和 Nvidia 声卡
+
+查看 Nvidia 独显以及同组其他设备的驱动
+
+```bash
+lspci -Dk 
+```
+
+观察输出中
+
+```
+0000:01:00.0 VGA compatible controller: NVIDIA Corporation AD107M [GeForce RTX 4060 Max-Q / Mobile] (rev a1)
+	Subsystem: ASUSTeK Computer Inc. Device 3638
+	Kernel driver in use: nvidia
+	Kernel modules: nouveau, nvidia_drm, nvidia
+0000:01:00.1 Audio device: NVIDIA Corporation AD107 High Definition Audio Controller (rev a1)
+	Subsystem: ASUSTeK Computer Inc. Device 3638
+	Kernel driver in use: snd_hda_intel
+	Kernel modules: snd_hda_intel
+```
+
+记住该 group 的所有设备的 PCI 地址及对应驱动为 `0000:01:00.0` - `nvidia` 和 `0000:01:00.1` - `snd_hda_intel`
+
+2. 查看当前使用 Nvidia 独显的进程
+
+```bash
+sudo fuser -v /dev/nvidia*
+sudo fuser -v /dev/dri/card0
+sudo fuser -v /dev/dri/renderD129
+```
+
+一般会出现桌面, 我们下一步需要让桌面使用 AMD 核显而不是 Nvidia 独显
+
+3, 桌面配置
+
+- Niri
+
+    Niri 的操作较为简单, 仅需修改桌面配置, 添加以下内容, 忽略掉 Nvidia 独显
+
+    ```kdl
+    debug {
+        ignore-drm-device "/dev/dri/by-path/pci-0000:01:00.0-card"
+        ignore-drm-device "/dev/dri/by-path/pci-0000:01:00.0-render"
+    }
+    ```
+- Hyprland 操作较为复杂, 需要使用脚本包装启动
+
+    合适位置创建脚本, 写入以下内容
+
+    ```bash
+    #!/bin/sh
+    export AQ_DRM_DEVICES=/dev/dri/card1
+    export __EGL_VENDOR_LIBRARY_FILENAMES=/usr/share/glvnd/egl_vendor.d/50_mesa.json
+    exec start-hyprland
+    ```
+
+    授予权限
+
+    ```bash
+    chmod +x /path/to/your/script
+    ```
+
+    编辑 `/etc/greetd/config.toml`
+
+    修改启动脚本
+
+    ```toml
+    command = "tuigreet --time --cmd /path/to/your/script"
+    ```
+
+继续执行查看独显进程的指令, 发现桌面在输出内容中消失了
+
+# 脱离脚本
+
+```bash
+#!/bin/bash
+
+# 卸载 Nvidia 独显
+sudo fuser -k -9 /dev/nvidia* 
+
+# 卸载内核模块
+sudo rmmod nvidia_drm
+sudo rmmod nvidia_modeset
+sudo rmmod nvidia_uvm
+sudo rmmod nvidia
+
+# 替换为之前记住的驱动名称, 解绑对应驱动
+echo "0000:01:00.0" | sudo tee /sys/bus/pci/drivers/nvidia/unbind
+echo "0000:01:00.1" | sudo tee /sys/bus/pci/drivers/snd_hda_intel/unbind 
+
+# 加载 vfio 模块
+sudo modprobe vfio-pci
+
+# 替换为之前记住的驱动名称, 绑定对应驱动到 vfio
+echo "vfio-pci" | sudo tee /sys/bus/pci/devices/0000:01:00.0/driver_override
+echo "vfio-pci" | sudo tee /sys/bus/pci/devices/0000:01:00.1/driver_override
+
+# 替换为之前记住的驱动名称, 重新探测 PCI 设备, 让主机放弃硬件控制权
+echo "0000:01:00.0" | sudo tee /sys/bus/pci/drivers_probe
+echo "0000:01:00.1" | sudo tee /sys/bus/pci/drivers_probe
+
+# 检测显卡是否脱离主机, 没有输出即正常
+lspci -k | grep -A 2 -i nvidia
+```
+
+# 回归脚本
+
+```bash
+#!/bin/bash
+
+# 替换为之前记住的驱动名称, 移除对应驱动覆盖
+echo "" | sudo tee /sys/bus/pci/devices/0000:01:00.0/driver_override
+echo "" | sudo tee /sys/bus/pci/devices/0000:01:00.1/driver_override
+
+# 替换为之前记住的驱动名称, 对应驱动解绑 vfio
+echo "0000:01:00.0" | sudo tee /sys/bus/pci/drivers/vfio-pci/unbind
+echo "0000:01:00.1" | sudo tee /sys/bus/pci/drivers/vfio-pci/unbind
+
+# 加载内核模块
+sudo modprobe nvidia
+sudo modprobe nvidia_drm
+sudo modprobe nvidia_modeset
+sudo modprobe nvidia_uvm
+
+# 替换为之前记住的驱动名称, 重新激活对应驱动
+echo "0000:01:00.0" | sudo tee /sys/bus/pci/drivers_probe
+echo "0000:01:00.1" | sudo tee /sys/bus/pci/drivers_probe
+```
+
+# windows 配置
+
+# 使用显卡
+
+## sunshine + moonlight
+
+略
+
+## LookingGlass
+
+**注意: 以下方案会使得 VirtIO 的虚拟磁盘失效, 传输文件请使用 SMB**
+
+### 主机配置
+
+加入 kvm 组
+
+```bash
+sudo gpasswd -a $USER kvm 
+```
+
+注销
+
+创建 `/etc/modprobe.d/kvmfr.conf`, 填写你需要的内存大小
+
+```
+options kvmfr static_size_mb=128
+```
+
+创建 `/etc/modules-load.d/kvmfr.conf`, 创建 Systemd 加载, 填写
+
+```
+kvmfr
+```
+
+编辑 `/etc/udev/rules.d/99-kvmfr.rules`, 设置权限
+
+```
+SUBSYSTEM=="kvmfr", OWNER="你的用户名", GROUP="kvm", MODE="0660"
+```
+
+编辑 `/etc/libvirt/qemu.conf` 取消注释 `cgroup_device_acl`, 并在类标末尾添加 `/dev/kvmfr0`, 注意逗号
+
+```
+cgroup_device_acl =[
+    ...
+    "/dev/kvmfr0"
+]
+```
+
+**重启**
+
+检验
+
+```
+sudo dmesg | grep kvmfr
+# 输出 kvmfr: creating 1 static device
+
+ls -l /dev/kvmfr0
+# 文件权限为 你的用户名 kvm
+```
+
+### 虚拟机配置
+
+打开 `Virtual Machine Manager`
+
+`编辑` - `首选项` - `常规` - `启用 XML 编辑`
+
+编辑虚拟机的 `概况` - `xml` 
+
+**注意, 下面修改1和3必须都修改完毕后再点击 `应用` 按钮!**
+
+```xml
+<!-- 修改1: 编辑 domin 标签头部, 添加 namespace -->
+<domain type='kvm' xmlns:qemu='http://libvirt.org/schemas/domain/qemu/1.0'>
+
+    ...
+
+    <devices>
+        
+        ...
+
+        <!-- 修改2: 修改 memballon 为 none, 可以提升内存性能 -->
+        <memballoon model="none"/>
+    </devices>
+
+    <!-- 修改3: 在 domin 标签末尾添加以下内容 -->
+    <qemu:commandline>
+    <qemu:arg value="-device"/>
+    <qemu:arg value="{'driver':'ivshmem-plain','id':'shmem0','memdev':'looking-glass'}"/>
+    <qemu:arg value="-object"/>
+    <qemu:arg value="{'qom-type':'memory-backend-file','id':'looking-glass','mem-path':'/dev/kvmfr0','size':134217728,'share':true}"/>
+    </qemu:commandline>
+</domain>
+
+```
+
+添加硬件 - PCI 主机设备 - 依次选择 group 中的 **所有** 设备添加
+
+设置以下内容
+
+显示协议 - 类型 - Spice 服务器
+
+显示协议 - 监听类型 - 地址
+        
+显示协议 - 地址 - 虚拟机管理程序默认
+
+显示协议 - 端口 - 自动 - 开
+
+显示协议 - OpenGL - 关
+
+显卡 - QXL
+
+### Windows 设置
+
+下载 [Nvidia APP](https://www.nvidia.cn/software/nvidia-app/) 并安装驱动程序
+
+下载 [Looking Glass](https://looking-glass.io/downloads) 的 Windows 客户端, 注意 `Windows Host Binary` 是可以点击的, 点击即可下载, 注意和主机的版本匹配
+
+### 使用 Looking Glass
+
+`-m` 指定穿透按键, 按下后会将键盘和鼠标交给虚拟机, 再按下后会归还到主机, 100 为右 ALT 按键
+
+```
+looking-glass-client -m 100
+```
