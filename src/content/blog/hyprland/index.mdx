@@ -694,6 +694,39 @@ sudo systemctl enable --now fix-ttynumpad.service
 
 ## 字体设置
 
+### 字体1
+
+包含
+
+| 字体          | 字体       | 字体       | 字体       | 字体        | 字体       |
+|-------------|----------|----------|----------|-----------|----------|
+| arial       | comicz   | framdit  | monbaiti | segoescb  | sylfaen  |
+| arialbd     | consola  | Gabriola | msgothic | segoeui   | symbol   |
+| arialbi     | consolab | gadugi   | msjh     | segoeuib  | tahoma   |
+| ariali      | consolai | gadugib  | msjhbd   | segoeuii  | tahomabd |
+| ariblk      | consolaz | georgia  | msjhl    | segoeuil  | taile    |
+| bahnschrift | constan  | georgiab | msyh     | segoeuisl | taileb   |
+| calibri     | constanb | georgiai | msyhbd   | segoeuiz  | times    |
+| calibrib    | constani | georgiaz | msyhl    | seguibl   | timesbd  |
+| calibrii    | constanz | himalaya | msyi     | seguibli  | timesbi  |
+| calibril    | corbel   | impact   | mvboli   | seguiemj  | timesi   |
+| calibrili   | corbelb  | Inkfree  | Nirmala  | seguihis  | trebuc   |
+| calibriz    | corbeli  | javatext | NirmalaB | seguili   | trebucbd |
+| cambria     | corbell  | l_10646  | NirmalaS | seguisb   | trebucbi |
+| cambriab    | corbelli | LeelaUIb | ntailu   | seguisbi  | trebucit |
+| cambriai    | corbelz  | LeelawUI | ntailub  | seguisli  | verdana  |
+| cambriaz    | cour     | LeelUIsl | pala     | seguisym  | verdanab |
+| Candara     | courbd   | lucon    | palab    | simfang   | verdanai |
+| Candarab    | courbi   | malgun   | palabi   | simhei    | verdanaz |
+| Candarai    | couri    | malgunbd | palai    | simkai    | webdings |
+| Candaral    | Deng     | malgunsl | phagspa  | simsun    | wingding |
+| Candarali   | Dengb    | marlett  | phagspab | simsunb   | YuGothB  |
+| Candaraz    | Dengl    | micross  | segmdl2  | Sitka     | YuGothL  |
+| comic       | ebrima   | mingliub | segoepr  | SitkaB    | YuGothM  |
+| comicbd     | ebrimabd | mmrtext  | segoeprb | SitkaI    | YuGothR  |
+| comici      | framd    | mmrtextb | segoesc  | SitkaZ    |          |
+
+
 准备好一个 Windows 安装镜像
 
 建议通过 ITELL YOU 下载 [新站](https://next.itellyou.cn/) [旧站](https://msdn.itellyou.cn/)
@@ -707,6 +740,28 @@ sudo systemctl enable --now fix-ttynumpad.service
 
 # 创建字体目录
 sudo mkdir -p /usr/share/fonts/Windows
+
+# 复制字体
+sudo cp fonts/* /usr/share/fonts/Windows/
+
+# 授予权限
+sudo chmod 644 /usr/share/fonts/Windows/*
+
+# 刷新字体缓存
+sudo fc-cache -fv
+```
+
+### 字体2
+
+|字体|字体|字体|字体|字体|字体|
+|---|---|---|---|---|---|
+|华文中宋|华文仿宋|华文彩云|华文新魏|华文楷体|华文琥珀|
+|华文细黑|华文行楷|华文隶体|微软雅黑|微软雅黑粗体||
+
+```bash
+# 复制仓库
+git clone https://github.com/chengda/popular-fonts
+
 
 # 复制字体
 sudo cp fonts/* /usr/share/fonts/Windows/
