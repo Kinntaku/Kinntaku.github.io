@@ -4,7 +4,6 @@ description: mangowc 体验
 date: 2026-6-24
 tags: ['Arch']
 authors: ['kinntaku']
-image: './banner.png'
 ---
 
 # 前言
