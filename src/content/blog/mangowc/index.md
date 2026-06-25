@@ -14,7 +14,7 @@ authors: ['kinntaku']
 
 # 软件安装
 
-由于 mangowc 的主线以及 release 线并没有合并 wlroots 0.20 的代码, 所以需要使用 text-input-v3-wlroots0.20 这个 branch 的代码, 对应 aur 中 mangowm-wlonly-git 包
+由于 mangowc 的主线以及 release 线并没有合并 wlroots 0.20 的代码, 所以需要使用 wl-only 这个 branch 的代码, 对应 aur 中 mangowm-wlonly-git 包
 
 ```bash
 paru -S mangowm-wlonly-git
@@ -76,9 +76,11 @@ sudo systemctl start --now restart-portals-after-suspend
 
 mangowc 同时支持 原版 xorg-xwayland 以及 xwayland-satellite, 本测试在意兼容性所以使用原版 xorg-xwayland
 
-目前存在的问题是笔记本设备在使用 nvidia 独显输出的 dp 接口连接显示器的时候开启使用 xwayland 的软件后直接进行 suspend 在唤醒后会导致软件崩溃或者卡死, 目前测试可复现的软件有 wechat-bin 以及 wps-office
+目前存在的问题是笔记本设备在使用 nvidia 独显输出的 dp 接口连接显示器的时候在外置显示器开启使用 xwayland 的软件后并保留软件在渲染区域内直接进行 suspend 在唤醒后会导致软件崩溃或者卡死, 目前测试可复现的软件有 wechat-bin 以及 wps-office ~~(怎么总是你俩)~~
 
 解决方法如下
+
+1. 方法1 (实测毫无卵用仅供参考)
 
 启用 nvidia 相关休眠服务
 
@@ -102,3 +104,29 @@ options nvidia NVreg_TemporaryFilePath=/var/tmp
 ```bash
 mkinitcpio -P
 ```
+
+2. 方法2
+
+由于问题触发条件如下
+
+    - 外接屏幕是 n 卡输出
+
+    - 软件运行在外接屏幕上
+
+    - 软件在外接屏幕渲染区域内 (就是能在屏幕上看见, 在外接显示器其他工作区的软件不会被触发)
+
+    - 软件使用 xwayland (其实只有 wechat 和 wps 会这样)
+
+所以我们只需要一个 hook 在休眠前关闭外接显示器, 在恢复后再打开就可以了, wlroots 系列的合成器会自动帮我们完成窗口的转移与恢复的过程, 既关闭显示器后软件移动到内置显示器, 再打开后自动移动到外部显示器上
+
+这里使用 swayidlde , 也可以直接使用 systemd 服务
+
+修改 mango 配置文件的 swayide 启动为
+
+```bash
+exec-once=swayidle -w before-sleep "wlr-randr --output DP-4 --off; swaylock -f" after-resume "sleep 2 && wlr-randr --output DP-4 --on"
+```
+
+# 其他问题
+
+1. 当 login manager 和 内核日志输入所在的 tty 不同, 然后在使用 mango 的时候 切换到内核日志输出的 tty 会遇到 dma 错误, 导致 mango 崩溃, 所以使用 tuigreet 为避免 greet 页面和内核输出冲突的用户建议直接换 regreet 或者直接关掉内核日志输出
