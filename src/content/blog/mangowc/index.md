@@ -8,7 +8,7 @@ authors: ['kinntaku']
 
 # 前言
 
-随着 wlroots 0.20 版本的发布, xdg-desktop-portal-wlr 终于拥有了原生的窗口共享协议 ext-image-capture-source-v1, 不用再使用 slurp 选择区域了, 新协议的效果是类似 xdg-desktop-portal-gnome 的真正窗口共享, 哪怕窗口不在屏幕内部或者被其他窗口所遮挡或者半透明依旧可以完整捕获, 但是在实际体验中依旧发现了一些问题, 此文章的目的就是记录配 mangowc 时遇到的一些问题以及解决方案.
+随着 wlroots 0.20 版本的发布, xdg-desktop-portal-wlr 终于拥有了原生的窗口共享协议 ext-image-capture-source-v1, 不用再使用 slurp 选择区域了, 新协议的效果是类似 xdg-desktop-portal-gnome 的真正窗口共享, 哪怕窗口不在屏幕内部或者被其他窗口所遮挡或者半透明依旧可以完整捕获, 但是在实际体验中依旧发现了一些问题, 此文章的目的就是记录配置 mangowc 时遇到的一些问题以及解决方案.
 
 ![](./screencast.png)
 
@@ -80,42 +80,16 @@ mangowc 同时支持 原版 xorg-xwayland 以及 xwayland-satellite, 本测试�
 
 解决方法如下
 
-1. 方法1 (实测毫无卵用仅供参考)
-
-启用 nvidia 相关休眠服务
-
-```bash
-sudo systemctl enable --now nvidia-hibernate.service
-sudo systemctl enable --now nvidia-resume.service
-sudo systemctl enable --now nvidia-suspend.service
-sudo systemctl enable --now nvidia-suspend-then-hibernate.service
-sudo systemctl enable --now nvidia-persistenced.service
-```
-
-创建 modprobe 文件 /etc/modprobe.d/nvidia-power-management.conf, 并写入以下内容关闭内存转移
-
-```bash
-options nvidia NVreg_PreserveVideoMemoryAllocations=1
-options nvidia NVreg_TemporaryFilePath=/var/tmp
-```
-
-重新生成 initramfs
-
-```bash
-mkinitcpio -P
-```
-
-2. 方法2
 
 由于问题触发条件如下
 
-    - 外接屏幕是 n 卡输出
+- 外接屏幕是 n 卡输出
 
-    - 软件运行在外接屏幕上
+- 软件运行在外接屏幕上
 
-    - 软件在外接屏幕渲染区域内 (就是能在屏幕上看见, 在外接显示器其他工作区的软件不会被触发)
+- 软件在外接屏幕渲染区域内 (就是能在屏幕上看见, 在外接显示器其他工作区的软件不会被触发)
 
-    - 软件使用 xwayland (其实只有 wechat 和 wps 会这样)
+- 软件使用 xwayland (其实只有 wechat 和 wps 会这样)
 
 所以我们只需要一个 hook 在休眠前关闭外接显示器, 在恢复后再打开就可以了, wlroots 系列的合成器会自动帮我们完成窗口的转移与恢复的过程, 既关闭显示器后软件移动到内置显示器, 再打开后自动移动到外部显示器上
 
@@ -129,4 +103,58 @@ exec-once=swayidle -w before-sleep "wlr-randr --output DP-4 --off; swaylock -f" 
 
 # 其他问题
 
-1. 当 login manager 和 内核日志输入所在的 tty 不同, 然后在使用 mango 的时候 切换到内核日志输出的 tty 会遇到 dma 错误, 导致 mango 崩溃, 所以使用 tuigreet 为避免 greet 页面和内核输出冲突的用户建议直接换 regreet 或者直接关掉内核日志输出
+1. mango 和 tty 之间相互切换的时候有概率遇到 dma 错误导致 mango崩溃
+
+    - 100%  触发情况:
+
+        当 login manager 和 内核日志输入所在的 tty 不同,  切换到内核日志输出的 tty 
+
+        所以使用 tuigreet 将 login manager 和 greeter 页面分离的用户建议直接换 regreet 或者直接关掉内核日志输出
+
+    - 概率触发情况
+
+        开启 obs 并选择 dp 输出显示器捕获的情况下, 切换到其他 tty 再切回 mango
+
+概率触发情况解决方案:
+
+启用 nvidia 相关休眠服务
+
+```bash
+sudo systemctl enable --now nvidia-hibernate.service
+sudo systemctl enable --now nvidia-resume.service
+sudo systemctl enable --now nvidia-suspend.service
+sudo systemctl enable --now nvidia-suspend-then-hibernate.service
+sudo systemctl enable --now nvidia-persistenced.service
+```
+
+添加内核参数
+
+```bash
+nvidia_drm.modeset=1 NVreg_PreserveVideoMemoryAllocations=1
+```  
+
+重新生成引导(以limine为例)
+
+```bash
+limine update
+```
+
+
+2. 使用 wlr-randr 关闭所有显示器的情况下会导致 mango 崩溃
+
+3. 腾讯会议无法共享屏幕
+
+- 修改打包方式(不一定有用, 可选):
+
+    bwrap 封装脚本中移除 --unshare-pid
+
+    原理: 这导致最新版腾讯会议在 Wayland 下通过 PipeWire 和 xdg-desktop-portal 申请投屏时，主机的 portal 守护进程由于 PID 命名空间隔离无法反查客户端凭证，进而导致点击“共享屏幕”按钮没有任何反应。
+
+- 打 patch, 参考
+
+    [wemeet-screenshare-patch](https://github.com/Matheritasiv/wemeet-screenshare-patch)
+
+n 卡视频黑屏:
+
+为腾讯会议单独设置 __EGL_VENDOR_LIBRARY_FILENAMES=/usr/share/glvnd/egl_vendor.d/50_mesa.json 环境变量（不要全局设置该变量！）
+
