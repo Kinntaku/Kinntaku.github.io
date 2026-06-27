@@ -139,8 +139,13 @@ nvidia_drm.modeset=1 NVreg_PreserveVideoMemoryAllocations=1
 limine update
 ```
 
-
 2. 使用 wlr-randr 关闭所有显示器的情况下会导致 mango 崩溃
+
+解决办法: 启动回话的时候就利用 mango 自带的功能开启一个虚拟显示器
+
+```bash
+exec-once=mmsg dispatch create_virtual_output
+```
 
 3. 腾讯会议无法共享屏幕
 
