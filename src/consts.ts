@@ -7,8 +7,8 @@ export const SITE: Site = {
   href: 'https://kinntaku.github.io/',
   author: 'Kinntaku',
   locale: 'zh-CN',
-  featuredPostCount: 2,
-  postsPerPage: 3,
+  featuredPostCount: 5,
+  postsPerPage: 10,
 }
 
 export const NAV_LINKS: SocialLink[] = [
